@@ -1,0 +1,73 @@
+
+<!-- create instance modal -->
+
+<div class="modal" id="createInstanceModal" tabindex="-1" role="dialog" aria-labelledby="createInstanceLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" data-bind="disable: isLoading">&times;
+                </button>
+                <h4 class="modal-title" id="createInstanceLabel">Create instance</h4>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <form id="createInstanceForm" class="form-signin" data-bind="submit: createInstance" autocomplete="off">
+                            <input name="instanceName" type="text" class="form-control" placeholder="Instance name" required autofocus>
+
+                            <select name="image" class="form-control" required>
+                                <option selected disabled>Choose image</option>
+                                <!-- ko foreach: imagesList -->
+                                <option data-bind="value: id, text: name"></option>
+                                <!-- /ko -->
+                            </select>
+
+                            <select name="flavor" class="form-control" required>
+                                <option selected disabled>Choose flavor</option>
+                                <!-- ko foreach: flavorsList -->
+                                <option data-bind="value: id, text: name"></option>
+                                <!-- /ko -->
+                            </select>
+
+                            <select name="sgroup" class="form-control" required>
+                                <option selected disabled>Choose security group</option>
+                                <!-- ko foreach: secGroupsList -->
+                                <option data-bind="value: name, text: name"></option>
+                                <!-- /ko -->
+                            </select>
+
+                            <button type="submit" id="createInstanceSubmit" class="hidden"/>
+
+
+                        </form>
+
+                    </div>
+                </div><!-- /.row -->
+
+                <!-- ko if: errorObj().createNodeError() -->
+                <div class="row">
+                    <div class="col-lg-12">
+
+                            <div class="alert alert-danger" role="alert" data-bind="text: errorObj().createNodeError().error">
+                            </div>
+                    </div>
+                </div>
+                <!-- /ko -->
+
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" data-bind="disable: isLoading">Close
+                </button>
+                <label id="createInstance" for="createInstanceSubmit" type="button" class="btn btn-success" data-bind="loadingButton: isLoading">Create instance
+                </label>
+            </div>
+
+
+        </div><!-- /modal-content-->
+    </div><!-- /modal-dialog -->
+</div><!-- /create instance modal -->

@@ -1,0 +1,26 @@
+
+<!-- Terminate instance Modal -->
+<div class="modal" id="terminateDialog" tabindex="-1" role="dialog" aria-labelledby="terminateDialogLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" data-bind="disable: isLoading">&times;</button>
+                <h4 class="modal-title" id="terminateDialogLabel">Terminate instance dialog</h4>
+            </div>
+            <div class="modal-body">
+                Terminate selected instance?
+                <!-- ko if: errorObj().createNodeError -->
+                <div class="alert alert-danger" role="alert" data-bind="text: errorObj().terminateNodeError()"></div>
+                <!-- /ko -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" data-bind="disable: isLoading">Close
+                </button>
+
+                <button id="terminateInstanceBtn" type="button" class="btn btn-danger" data-bind="loadingButton: isLoading, click: function () { $root.terminateInstance(instanceToTerminate()); }">Terminate
+                </button>
+
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

@@ -1,0 +1,29 @@
+
+<!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
+<div class="collapse navbar-collapse navbar-ex1-collapse">
+    <ul class="nav navbar-nav side-nav">
+
+        <li {% if rootActive %} class="active" {% endif %} >
+            <a href="/">
+                <i class="fa fa-fw fa-dashboard"></i>
+                Overview
+            </a>
+        </li>
+
+        <li {% if createNodeActive %} class="active" {% endif %} >
+            <a href="/instances">
+                <i class="fa fa-fw fa-cloud"></i>
+                Instances
+            </a>
+        </li>
+
+        <li {% if sshActive %} class="active" {% endif %} >
+            <a href="/ssh">
+                <i class="fa fa-fw fa-terminal "></i>
+                SSH
+            </a>
+        </li>
+
+    </ul>
+</div>
+<!-- /.navbar-collapse -->

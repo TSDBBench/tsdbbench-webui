@@ -1,0 +1,42 @@
+{% extends "base_templates/index_base.html" %}
+
+{% block title %}TSDBBench Web UI{% endblock title %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+{% endblock head %}
+
+
+{% block main_page_heading %}
+
+    <!-- Page Heading -->
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">
+                Dashboard <small>Overview</small>
+            </h1>
+            <ol class="breadcrumb">
+                <li class="active">
+                    <i class="fa fa-dashboard"></i>
+                    Dashboard
+                </li>
+            </ol>
+        </div>
+    </div>
+    <!-- /.row -->
+
+{% endblock main_page_heading %}
+
+{% block page_content %}
+
+    actual content
+
+{% endblock page_content %}
+
+
+{% block body_jscripts %}
+    {{ super() }}
+{% endblock body_jscripts %}

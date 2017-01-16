@@ -1,0 +1,35 @@
+
+<!-- Attach floating IP Modal -->
+
+<div class="modal" id="attachFloatingIpModal" tabindex="-1" role="dialog" aria-labelledby="attachFloatingIpLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" data-bind="disable: isLoading">&times;
+                </button>
+                <h4 class="modal-title" id="attachFloatingIpLabel">Attach floating IP dialog</h4>
+            </div>
+
+            <div class="modal-body">
+                Choose floating IP from the list
+
+                <select name="float_ips" class="form-control" data-bind="options: unusedFloatingIpList, optionsText: 'ip_address', optionsValue: 'id', value: floatingIp, optionsCaption: 'Choose floating IP'" >
+                </select>
+
+                <!-- ko if: errorObj().attachIpError -->
+                <div class="alert alert-danger" role="alert" data-bind="text: errorObj().terminateNodeError()"></div>
+                <!-- /ko -->
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" data-bind="disable: isLoading">Close
+                </button>
+
+                <button id="attachFloatingIp" type="button" class="btn btn-success" data-bind="loadingButton: isLoading, click: function () { attachFloatingIp(floatingIp, instanceToAttachFloatingIp) }, enable: floatingIp">Attach
+                </button>
+            </div>
+
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

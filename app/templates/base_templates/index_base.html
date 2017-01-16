@@ -1,0 +1,52 @@
+{% extends "base_templates/base.html" %}
+
+{% block title %}TSDBBench Web UI{% endblock title %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+{% endblock head %}
+
+
+{% block body %}
+    <div id="wrapper">
+
+        {% block nav %}
+            <!-- Navigation -->
+            <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+
+                {% include 'partials/navigation/navbar_header.html' %}
+
+                {% include 'partials/navigation/top_menu.html' %}
+
+                {% include 'partials/navigation/sidebar.html' %}
+
+            </nav>
+        {% endblock nav %}
+
+        {% block page_container %}
+            <div id="page-wrapper">
+                <div class="container-fluid">
+                    <div class="fill">
+                        {% block main_page_heading %} {% endblock main_page_heading %}
+
+                        {% block page_content %} {% endblock page_content %}
+                    </div>
+                </div><!-- /.container-fluid -->
+            </div><!-- /#page-wrapper -->
+        {% endblock page_container %}
+
+    </div>
+    <!-- /#wrapper -->
+{% endblock body%}
+
+
+
+{% block body_jscripts %}
+    {{ super() }}
+    <script src="static/js/lib/bootstrap.min.js"></script>
+    <script src="static/js/lib/knockout-3.4.1.js"></script>
+    <script src="static/js/main.js"></script>
+{% endblock body_jscripts %}

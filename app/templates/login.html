@@ -1,0 +1,46 @@
+{% extends "base_templates/base.html" %}
+
+{% block title %}TSDBBench Web UI{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/login.css">
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-6 col-md-4 col-md-offset-4">
+                <h1 class="text-center login-title">Sign in to TSDBBench Web UI</h1>
+                <div class="account-wall">
+                    <img class="profile-img" src="https://lh5.googleusercontent.com/-b0-k99FZlyE/AAAAAAAAAAI/AAAAAAAAAAA/eu7opA4byxI/photo.jpg?sz=120"
+                alt="">
+                    <form class="form-signin" action="{{ url_for('main.index')}}" method="post">
+                        <input name="user" type="text" class="form-control" placeholder="User" required autofocus>
+                        <input name="pwd" type="password" class="form-control" placeholder="Password" required>
+
+                        <select name="provider" class="form-control" required>
+                            <option selected disabled>Choose provider</option>
+                            {% for key in providers %}
+                            <option value= "{{ key }}">{{ providers[key] }}</option>
+                            {% endfor %}
+                        </select>
+                    <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+                    </form>
+                </div>
+
+                {% if exception %}
+                <div class="alert alert-danger" role="alert">
+                {{ exceptionType }} : {{ exception }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block body_jscripts %}
+    {{ super() }}
+{% endblock %}
