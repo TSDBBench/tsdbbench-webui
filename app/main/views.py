@@ -58,8 +58,17 @@ def index():
                 )
 
         if request.method == 'GET':
-            return render_template('login.html', providers=current_app.config["PROVIDERS"])
-
+            return render_template(
+                'login.html',
+                providers=current_app.config["PROVIDERS"],
+                host=current_app.config["HOST"],
+                region_name=current_app.config["REGION_NAME"],
+                session_type=current_app.config["SESSION_TYPE"],
+                keydir=current_app.config["KEYDIR"],
+                vm_user_name=current_app.config["VM_USER_NAME"],
+                openstack_settings=current_app.config["OPENSTACK_SETTINGS"],
+                tdsbbench_settings=current_app.config["TSDBBENCH_SETTINGS"],
+            )
 
 @main.route('/logout', methods=['GET'])
 def logout():
@@ -253,5 +262,12 @@ def attachfloatingip():
 def ssh():
     if 'username' in session:
         return render_template('ssh.html', sshActive=True)
+    else:
+        return jsonify({"error": "User is not logged in. Please log in"})
+
+@main.route('/ssh2', methods=['GET'])
+def ssh():
+    if 'username' in session:
+        return render_template('ssh2.html', sshActive=True)
     else:
         return jsonify({"error": "User is not logged in. Please log in"})
