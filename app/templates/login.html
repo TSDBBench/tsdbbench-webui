@@ -16,18 +16,30 @@
                 <div class="account-wall">
                     <img class="profile-img" src="https://lh5.googleusercontent.com/-b0-k99FZlyE/AAAAAAAAAAI/AAAAAAAAAAA/eu7opA4byxI/photo.jpg?sz=120"
                 alt="">
-                    <form class="form-signin" action="{{ url_for('main.index')}}" method="post">
-                        <input name="user" type="text" class="form-control" placeholder="User" required autofocus>
-                        <input name="pwd" type="password" class="form-control" placeholder="Password" required>
 
-                        <select name="provider" class="form-control" required>
-                            <option selected disabled>Choose provider</option>
-                            {% for key in providers %}
-                            <option value= "{{ key }}">{{ providers[key] }}</option>
-                            {% endfor %}
+
+
+
+                    <form class="form-signin" action="{{ url_for('main.index')}}" method="post">
+                        <select class="form-control provider" data-bind="options: providersConfigs, optionsText: 'provider', value: selectedProvider, optionsCaption: 'Choose provider'">
                         </select>
-                    <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+
+                        <input name="user" type="text" class="form-control" placeholder="User" required="true" autofocus>
+                        <input name="pwd" type="password" class="form-control" placeholder="Password" required="true">
+
+                        <!-- ko if: selectedProvider -->
+                            <input name="provider" hidden="true" data-bind="value: selectedProvider().provider">
+                            <!-- ko foreach: selectedProviderFields -->
+                                <input class="form-control" required="true" data-bind="value: value, attr: {placeholder: nameCap, name: name}"/>
+
+                            <!-- /ko -->
+
+                        <!-- /ko -->
+
+                        <button class="btn btn-lg btn-primary btn-block" type="submit" data-bind="enable: selectedProvider">Sign in</button>
                     </form>
+
+
                 </div>
 
                 {% if exception %}
@@ -43,4 +55,6 @@
 
 {% block body_jscripts %}
     {{ super() }}
+    <script src="static/js/lib/knockout-3.4.1.js"></script>
+    <script src="static/js/login.js"></script>
 {% endblock %}

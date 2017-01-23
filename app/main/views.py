@@ -11,9 +11,9 @@ def get_connection_from_session():
     driver = get_openstack_connection(
         auth['user'],
         auth['p'],
-        current_app.config["HOST"],
-        current_app.config["PROJECT_NAME"],
-        current_app.config["REGION_NAME"]
+        auth['host'],
+        auth['project'],
+        auth['region'],
     )
     return driver['connection']
 
@@ -28,37 +28,42 @@ def index():
     else:
 
         if request.method == 'POST':
-            user = str(escape(request.form['user']))
-            pwd = str(escape(request.form['pwd']))
+            provider = str(escape(request.form['provider']))
 
-            result = get_openstack_connection(
-                user,
-                pwd,
-                current_app.config["HOST"],
-                current_app.config["PROJECT_NAME"],
-                current_app.config["REGION_NAME"]
-            )
+            if provider == 'Openstack':
 
-            # print(result['connection'], file=sys.stderr)
+                user = str(escape(request.form['user']))
+                pwd = str(escape(request.form['pwd']))
+                host = str(escape(request.form['host']))
+                project = str(escape(request.form['project']))
+                region = str(escape(request.form['region']))
 
-            if 'exception' not in result:
-                session['username'] = {
-                    "user": user,
-                    "p": pwd
-                }
+                result = get_openstack_connection(user, pwd, host, project, region)
 
-                print("=== " + user + " logged in ===", file=sys.stderr)
-                return redirect(url_for('.index'))
-            else:
-                return render_template(
-                    'login.html',
-                    providers=current_app.config["PROVIDERS"],
-                    exception=result['exception'],
-                    exceptionType=result['exceptionType']
-                )
+                # print(result['connection'], file=sys.stderr)
+
+                if 'exception' not in result:
+                    session['username'] = {
+                        'user': user,
+                        'p': pwd,
+                        'host': host,
+                        'project': project,
+                        'region': region
+
+                    }
+
+                    print("=== " + user + " logged in ===", file=sys.stderr)
+                    return redirect(url_for('.index'))
+                else:
+                    return render_template(
+                        'login.html',
+                        exception=result['exception'],
+                        exceptionType=result['exceptionType']
+                    )
 
         if request.method == 'GET':
-            return render_template('login.html', providers=current_app.config["PROVIDERS"])
+
+            return render_template('login.html')
 
 
 @main.route('/logout', methods=['GET'])
@@ -81,6 +86,11 @@ def logout():
 def getimages():
     images = get_openstack_image_catalog(get_connection_from_session())
     return jsonify(images)
+
+
+@main.route('/getprovidersettings', methods=['GET'])
+def getprovidersettings():
+    return jsonify(current_app.config["PROVIDERS"])
 
 
 @main.route('/getflavors', methods=['GET'])
