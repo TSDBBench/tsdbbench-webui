@@ -1,6 +1,7 @@
 from flask import render_template, redirect, url_for, session, request, current_app, escape, jsonify
 from app.libcloud_utils import *
 from app.ssh_utils import *
+from app.ssh_benchmark_controller import *
 from . import main
 import sys
 import time
@@ -265,9 +266,12 @@ def ssh():
     else:
         return jsonify({"error": "User is not logged in. Please log in"})
 
-@main.route('/ssh2', methods=['GET'])
-def ssh():
+@main.route('/benchmark', methods=['GET'])
+def benchmark():
     if 'username' in session:
-        return render_template('ssh2.html', sshActive=True)
+        #start the benchmark through ssh
+        #benchmark results files will be returned when the process is finished
+        result_files = execute_benchmark_process()
+        return render_template('benchmark.html', benchmarkActive=True, result_files=result_files)
     else:
         return jsonify({"error": "User is not logged in. Please log in"})
