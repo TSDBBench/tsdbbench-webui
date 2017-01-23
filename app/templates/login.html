@@ -26,21 +26,16 @@
                             <option value= "{{ key }}">{{ providers[key] }}</option>
                             {% endfor %}
                         </select>
+                        <!-- todos -->
+                        <!-- multi provider picker -->
+                        <!-- dynamic provider-specific settings -->
 
-                        <input name="pwd" type="text" class="form-control" placeholder="Host Address" value="{{ host }}" required>
-                        <input name="pwd" type="text" class="form-control" placeholder="region_name" value="{{ region_name }}" required>
-                        <input name="pwd" type="text" class="form-control" placeholder="session_type" value="{{ session_type }}" required>
-                        <input name="pwd" type="text" class="form-control" placeholder="keydir" value="{{ keydir }}" required>
-                        <input name="pwd" type="text" class="form-control" placeholder="vm_user_name" value="{{ vm_user_name }}" required>
+                        <input name="host" type="text" class="form-control" placeholder="Host Address" value="{{ host }}" >
+                        <input name="region_name" type="text" class="form-control" placeholder="region_name" value="{{ region_name }}" >
 
                         {% for key in openstack_settings %}
                         <label>{{ key }}</label>
-                        <input name="{{ key }}" type="text" class="form-control" placeholder="{{ key }}" value="{{ openstack_settings[key] }}" required>
-                        {% endfor %}
-
-                        {% for key in tdsbbench_settings %}
-                        <label>{{ key }}</label>
-                        <input name="{{ key }}" type="text" class="form-control" placeholder="{{ key }}" value="{{ tdsbbench_settings[key] }}" required>
+                        <input name="{{ key }}" type="text" class="form-control" placeholder="{{ key }}" value="{{ openstack_settings[key] }}" >
                         {% endfor %}
 
                         <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
