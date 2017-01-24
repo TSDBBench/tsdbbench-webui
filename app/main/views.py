@@ -97,6 +97,11 @@ def getprovidersettings():
     return jsonify(current_app.config["PROVIDERS"])
 
 
+@main.route('/getdatabases', methods=['GET'])
+def getdatabases():
+    return jsonify(current_app.config["TSDBBENCH_SETTINGS"]['supported_databases'])
+
+
 @main.route('/getflavors', methods=['GET'])
 def getflavors():
     if session.get('username', None)['provider'] == 'Openstack':
@@ -128,7 +133,18 @@ def getsecuritygroups():
 def getfloatingips():
     if session.get('username', None)['provider'] == 'Openstack':
         floating_ips = get_floating_ips_catalog(get_connection_from_session())
-        return jsonify(floating_ips)
+        if len(floating_ips) > 0:
+            return jsonify(floating_ips)
+        else:
+            return jsonify({'error': 'No floating IPs, delete unused and allocate a new one'})
+    else:
+        return jsonify(None)
+
+
+@main.route('/allocatefloatingip', methods=['POST'])
+def allocatefloatingip():
+    if session.get('username', None)['provider'] == 'Openstack':
+        return jsonify(allocate_floating_ip(get_connection_from_session()))
     else:
         return jsonify(None)
 
@@ -276,6 +292,17 @@ def attachfloatingip():
             floating_ip = str(escape(request.form['floating_ip']))
             conn = get_connection_from_session()
             result = attach_floating_ip(conn, floating_ip, node)
+            return jsonify(str(result))
+    else:
+        return jsonify({"error": "User is not logged in. Please log in"})
+
+
+@main.route('/releasefloatingips', methods=['POST'])
+def releasefloatingips():
+    if 'username' in session:
+        if session.get('username', None)['provider'] == 'Openstack':
+            conn = get_connection_from_session()
+            result = release_unused_floating_ips(conn)
             return jsonify(str(result))
     else:
         return jsonify({"error": "User is not logged in. Please log in"})

@@ -275,17 +275,38 @@ def delete_key_pair(conn, key_name):
 def get_floating_ips_catalog(conn):
     try:
         floating_ips = []
+
         for fip in conn.ex_list_floating_ips():
-            f = {
-                'id': fip.id,
-                'ip_address': fip.ip_address,
-                'node_id': fip.node_id
-            }
-            floating_ips.append(f)
+            if fip.node_id == None:
+                f = {
+                    'id': fip.id,
+                    'ip_address': fip.ip_address,
+                    'node_id': fip.node_id
+                }
+                floating_ips.append(f)
+
         return floating_ips
+
     except Exception as e:
         return e
 
+
+def allocate_floating_ip(conn):
+    try:
+        pools = conn.ex_list_floating_ip_pools()
+        for pool in pools:
+            if pool.name == 'float':
+                print('Allocating new Floating IP from pool: {}'.format(pool))
+                unused_fip = pool.create_floating_ip()
+                print(unused_fip)
+                return {
+                    'id': unused_fip.id,
+                    'ip_address': unused_fip.ip_address,
+                    'node_id': unused_fip.node_id
+                }
+        return False
+    except Exception as e:
+        return e
 
 def get_floating_ip_by_id(conn, ip_id):
     try:
@@ -324,6 +345,17 @@ def attach_floating_ip(conn, floating_ip, node_id):
         if f is not None and n is not None:
             return conn.ex_attach_floating_ip_to_node(n, f)
         return False
+    except Exception as e:
+        return e
+
+
+def release_unused_floating_ips(conn):
+    try:
+        float_ips = conn.ex_list_floating_ips()
+        for ip in float_ips:
+            if "None" in str(ip.node_id):
+                ip.delete()
+        return True
     except Exception as e:
         return e
 

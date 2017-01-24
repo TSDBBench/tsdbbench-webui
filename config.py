@@ -27,9 +27,31 @@ class Config:
         },
         'config_file_path': '/home/vagrant/TSDBBench/vagrant_files/vagrantconf.rb',
         'config_file_path_gen': '/home/vagrant/TSDBBench/vagrant_files/vagrantconf_gen.rb',
-        'config_file_path_db': '/home/vagrant/TSDBBench/vagrant_files/vagrantconf_db.rb'
+        'config_file_path_db': '/home/vagrant/TSDBBench/vagrant_files/vagrantconf_db.rb',
+        'supported_databases': {
+            'akumuli': ['cl1_rf1'],
+            'blueflood': ['cl1_rf1', 'cl5_rf1', 'cl5_rf2', 'cl5_rf5'],
+            'databus_rtable': ['cl1_rf1'],
+            'databus_rtstable': ['cl1_rf1'],
+            'databus_tstable': ['cl1_rf1'],
+            'druid': ['cl1_rf1', 'cl5_rf1', 'cl5_rf2', 'cl5_rf5'],
+            'elasticsearch': ['cl1_rf1', 'cl5_rf1'],
+            'gnocchi': ['cl1'],
+            'graphite': ['cl1_rf1'],
+            'h5serv': ['cl1_rf1'],
+            'influxdb': ['cl1_rf1', 'cl5_rf1', 'cl5_rf2', 'cl5_rf5'],
+            'kairosdb': ['cl1_rf1', 'cl5_rf1', 'cl5_rf2', 'cl5_rf5'],
+            'kairosdb_h2': ['cl1_rf1'],
+            'kdbplus': ['cl1_rf1'],
+            'monetdb': ['cl1_rf1'],
+            'mysql': ['cl1_rf1'],
+            'newts': ['cl1_rf1', 'cl5_rf1', 'cl5_rf2', 'cl5_rf5'],
+            'opentsdb': ['cl1_rf1', 'cl5_rf1', 'cl5_rf2', 'cl5_rf5'],
+            'postgresql': ['cl1_rf1'],
+            'rhombus': ['cl1_rf1', 'cl5_rf1', 'cl5_rf2', 'cl5_rf5'],
+            'seriesly': ['cl1_rf1']
+        }
     }
-
 
     @staticmethod
     def init_app(app):

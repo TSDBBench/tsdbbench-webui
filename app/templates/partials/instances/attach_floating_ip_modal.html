@@ -20,6 +20,11 @@
                 <!-- ko if: errorObj().attachIpError -->
                 <div class="alert alert-danger" role="alert" data-bind="text: errorObj().terminateNodeError()"></div>
                 <!-- /ko -->
+
+                <!-- ko if: errorObj().noFloatingIpError -->
+                <div class="alert alert-danger" role="alert" data-bind="text: errorObj().noFloatingIpError().error"></div>
+                <!-- /ko -->
+
             </div>
 
             <div class="modal-footer">
@@ -29,6 +34,7 @@
                 <button id="attachFloatingIp" type="button" class="btn btn-success" data-bind="loadingButton: isLoading, click: function () { attachFloatingIp(floatingIp, instanceToAttachFloatingIp) }, enable: floatingIp">Attach
                 </button>
             </div>
+
 
         </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
