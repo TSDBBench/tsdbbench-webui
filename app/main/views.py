@@ -266,12 +266,38 @@ def ssh():
     else:
         return jsonify({"error": "User is not logged in. Please log in"})
 
-@main.route('/benchmark', methods=['GET'])
+@main.route('/benchmark', methods=['GET', 'POST'])
 def benchmark():
     if 'username' in session:
-        #start the benchmark through ssh
-        #benchmark results files will be returned when the process is finished
-        result_files = execute_benchmark_process()
-        return render_template('benchmark.html', benchmarkActive=True, result_files=result_files)
+        if request.method == 'POST':
+            #ajax benchmark execution
+            #start the benchmark through ssh
+            #benchmark results files will be returned when the process is finished
+            result_files = execute_benchmark_process()
+            response = jsonify(result_files)
+            response.headers.add('Access-Control-Allow-Origin', '*')
+
+            return jsonify(result_files)
+        else:
+            #render the benchmark view
+            return render_template('benchmark.html', benchmarkActive=True)
+    else:
+        return jsonify({"error": "User is not logged in. Please log in"})
+
+@main.route('/benchmark_progress', methods=['GET', 'POST'])
+def benchmark_progress():
+    if 'username' in session:
+        if request.method == 'POST':
+            progress = get_new_benchmark_progress_messages()
+            response = jsonify(progress)
+            response.headers.add('Access-Control-Allow-Origin', '*')
+
+            return response
+        else:
+            progress = get_benchmark_progress_messages()
+            response = jsonify(progress)
+            response.headers.add('Access-Control-Allow-Origin', '*')
+
+            return response
     else:
         return jsonify({"error": "User is not logged in. Please log in"})

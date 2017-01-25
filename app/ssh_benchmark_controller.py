@@ -2,6 +2,7 @@ import paramiko
 import time
 import sys
 import os
+from flask import session
 from app.ssh_utils import *
 
 def make_connection(server,user,key_file):
@@ -88,7 +89,9 @@ def execute_command(ssh,command):
         while True:  # monitoring process
             # Reading from output streams
             while chan.recv_ready():
-                print(str(chan.recv(1000))) 
+                output = str(chan.recv(1000))
+                session["benchmark_progress_messages"].append(output)
+                print(output) 
             while chan.recv_stderr_ready():
                 errdata += str(chan.recv_stderr(1000))
             if chan.exit_status_ready():  # If completed
@@ -107,17 +110,43 @@ def execute_command(ssh,command):
 
 def clean_tmp_folder(ssh_session):
     print ("Cleaning tmp folder")
-    clean_command_1 = "cd /home/vagrant/tmp"
-    clean_command_2 = "rm -rf generator_0/"
-    clean_command_3 = "rm -rf mysql_cl1_rf1_0/"
+    # clean_command_1 = "cd /home/vagrant/tmp"
+    # clean_command_2 = "rm -rf generator_0/"
+    # clean_command_3 = "rm -rf mysql_cl1_rf1_0/"
 
-    execute_command(ssh_session,clean_command_1)
-    execute_command(ssh_session,clean_command_2)
-    execute_command(ssh_session,clean_command_3)
+    command_kill='pkill -f python2'
+    command_d='rm -rf /home/vagrant/tmp/{*,.*}'
+
+    execute_command(ssh_session,command_kill)
+    execute_command(ssh_session,command_d)
+
+    # execute_command(ssh_session,clean_command_1)
+    # execute_command(ssh_session,clean_command_2)
+    # execute_command(ssh_session,clean_command_3)
 
     return
 
+#returns accumulated progress messages
+#deletes all progress messages so that new ones can be stored
+def get_new_benchmark_progress_messages():
+    new_benchmark_progress_messages = []
+    if 'benchmark_progress_messages' in session:
+        new_benchmark_progress_messages = session["benchmark_progress_messages"]
+    session["benchmark_progress_messages"] = []
+    return new_benchmark_progress_messages
+
+#returns accumulated progress messages
+def get_benchmark_progress_messages():
+    benchmark_progress_messages = []
+    if 'benchmark_progress_messages' in session:
+        benchmark_progress_messages = session["benchmark_progress_messages"]
+    else:
+        session["benchmark_progress_messages"] = []
+    return benchmark_progress_messages
+
 def execute_benchmark_process():
+    benchmark_progress_messages = []
+    session["benchmark_progress_messages"] = benchmark_progress_messages
     command_1='cd /home/vagrant/TSDBBench && ./TSDBBench.py -t /home/vagrant/tmp -f /home/vagrant/TSDBBench/vagrant_files/ /home/vagrant/TSDBBench/vagrant_files/ -d mysql_cl1_rf1 postgresql_cl1_rf1 -w testworkloada -l --provider openstack -m'
     command_2='cd /home/vagrant/TSDBBench && cp ycsb_*_cl1_rf1_testworkloada_*.html ycsb_combined_*.html /var/www/html/TSDBBench/'
     command_3='ls -a /var/www/html/TSDBBench/'
