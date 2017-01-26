@@ -61,6 +61,7 @@ $(function () {
             errorObj = ko.observable({
                 createNodeError: ko.observable(),
                 terminateNodeError: ko.observable(),
+                noFloatingIpError: ko.observable(),
                 attachIpError: ko.observable()
             }),
             isLoading = ko.observable(false),
@@ -198,13 +199,41 @@ $(function () {
                 });
             },
             getFloatingIpList = function() {
+                floatingIpList.removeAll();
                 $.ajax({
                     type: 'GET',
                     dataType: "json",
                     url: '/getfloatingips',
                     data: {},
                     success: function(data) {
-                        floatingIpList(data);
+                        if (data.error) {
+                           console.log(data);
+                           errorObj().noFloatingIpError(data);
+                        }
+                        else {
+                            floatingIpList(data);
+                        }
+                    },
+                    timeout: 5000
+                }).fail( function( xhr, status ) {
+                    if( status == "timeout" ) {
+                        console.log('timeout');
+                    }
+                    else {
+                        console.log(xhr);
+                        if(status) console.log(status);
+                        console.log('another error');
+                    }
+                });
+            },
+            allocateFloatingIp = function() {
+                $.ajax({
+                    type: 'POST',
+                    dataType: "json",
+                    url: '/allocatefloatingip',
+                    data: {},
+                    success: function(data) {
+                        console.log("Floating IP was allocated");
                     },
                     timeout: 5000
                 }).fail( function( xhr, status ) {
@@ -442,11 +471,36 @@ $(function () {
                     }
                 });
             },
+            releaseFloatingIPs = function() {
+                isLoading(true);
+                $.ajax({
+                    type: "POST",
+                    url: "/releasefloatingips",
+                    data: {},
+                    success: function(data) {
+                        isLoading(false);
+                        console.log("Unused floating IPs were successfully released");
+                    }
+                }).fail( function( xhr, status ) {
+                    isLoading(false);
+                    if( status == "timeout" ) {
+                        console.log("timeout");
+                    }
+                    else {
+                        console.log(xhr);
+                        if(status) console.log(status);
+                        console.log('another error');
+                    }
+                });
+            },
             toggleTerminateDialog = function(node_id) {
                 instanceToTerminate(node_id);
                 $('#terminateDialog').modal('show');
             },
             toggleFloatingIpDialog = function(node_id) {
+                errorObj().noFloatingIpError(undefined);
+                errorObj().attachIpError(undefined);
+
                 getFloatingIpList();
                 instanceToAttachFloatingIp(node_id);
                 $('#attachFloatingIpModal').modal('show');
@@ -473,6 +527,7 @@ $(function () {
             };
 
             return {
+                allocateFloatingIp: allocateFloatingIp,
                 attachFloatingIp: attachFloatingIp,
                 checkKeyPair: checkKeyPair,
                 createInstance: createInstance,
@@ -496,6 +551,7 @@ $(function () {
                 nodesList: nodesList,
                 nodesIsLoadingArray: nodesIsLoadingArray,
                 rebootInstance: rebootInstance,
+                releaseFloatingIPs: releaseFloatingIPs,
                 secGroupsList: secGroupsList,
                 startInstance: startInstance,
                 stopInstance: stopInstance,

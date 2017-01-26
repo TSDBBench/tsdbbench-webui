@@ -12,9 +12,9 @@ def get_connection_from_session():
     driver = get_openstack_connection(
         auth['user'],
         auth['p'],
-        current_app.config["HOST"],
-        current_app.config["PROJECT_NAME"],
-        current_app.config["REGION_NAME"]
+        auth['host'],
+        auth['project'],
+        auth['region'],
     )
     return driver['connection']
 
@@ -29,47 +29,44 @@ def index():
     else:
 
         if request.method == 'POST':
-            user = str(escape(request.form['user']))
-            pwd = str(escape(request.form['pwd']))
+            provider = str(escape(request.form['provider']))
 
-            result = get_openstack_connection(
-                user,
-                pwd,
-                current_app.config["HOST"],
-                current_app.config["PROJECT_NAME"],
-                current_app.config["REGION_NAME"]
-            )
+            if provider == 'Openstack':
 
-            # print(result['connection'], file=sys.stderr)
+                user = str(escape(request.form['user']))
+                pwd = str(escape(request.form['pwd']))
+                host = str(escape(request.form['host']))
+                project = str(escape(request.form['project']))
+                region = str(escape(request.form['region']))
 
-            if 'exception' not in result:
-                session['username'] = {
-                    "user": user,
-                    "p": pwd
-                }
+                result = get_openstack_connection(user, pwd, host, project, region)
 
-                print("=== " + user + " logged in ===", file=sys.stderr)
-                return redirect(url_for('.index'))
-            else:
-                return render_template(
-                    'login.html',
-                    providers=current_app.config["PROVIDERS"],
-                    exception=result['exception'],
-                    exceptionType=result['exceptionType']
-                )
+                # print(result['connection'], file=sys.stderr)
+
+                if 'exception' not in result:
+                    session['username'] = {
+                        'provider': provider,
+                        'user': user,
+                        'p': pwd,
+                        'host': host,
+                        'project': project,
+                        'region': region
+
+                    }
+
+                    print("=== " + user + " logged in ===", file=sys.stderr)
+                    return redirect(url_for('.index'))
+                else:
+                    return render_template(
+                        'login.html',
+                        exception=result['exception'],
+                        exceptionType=result['exceptionType']
+                    )
 
         if request.method == 'GET':
-            return render_template(
-                'login.html',
-                providers=current_app.config["PROVIDERS"],
-                host=current_app.config["HOST"],
-                region_name=current_app.config["REGION_NAME"],
-                session_type=current_app.config["SESSION_TYPE"],
-                keydir=current_app.config["KEYDIR"],
-                vm_user_name=current_app.config["VM_USER_NAME"],
-                openstack_settings=current_app.config["OPENSTACK_SETTINGS"],
-                tdsbbench_settings=current_app.config["TSDBBENCH_SETTINGS"],
-            )
+
+            return render_template('login.html')
+
 
 @main.route('/logout', methods=['GET'])
 def logout():
@@ -89,32 +86,68 @@ def logout():
 
 @main.route('/getimages', methods=['GET'])
 def getimages():
-    images = get_openstack_image_catalog(get_connection_from_session())
-    return jsonify(images)
+    if session.get('username', None)['provider'] == 'Openstack':
+        images = get_openstack_image_catalog(get_connection_from_session())
+        return jsonify(images)
+    else:
+        return jsonify(None)
+
+
+@main.route('/getprovidersettings', methods=['GET'])
+def getprovidersettings():
+    return jsonify(current_app.config["PROVIDERS"])
+
+
+@main.route('/getdatabases', methods=['GET'])
+def getdatabases():
+    return jsonify(current_app.config["TSDBBENCH_SETTINGS"]['supported_databases'])
 
 
 @main.route('/getflavors', methods=['GET'])
 def getflavors():
-    flavors = get_openstack_flavor_catalog(get_connection_from_session())
-    return jsonify(flavors)
+    if session.get('username', None)['provider'] == 'Openstack':
+        flavors = get_openstack_flavor_catalog(get_connection_from_session())
+        return jsonify(flavors)
+    else:
+        return jsonify(None)
 
 
 @main.route('/getnodes', methods=['GET'])
 def getnodes():
-    nodes = get_openstack_node_catalog(get_connection_from_session())
-    return jsonify(nodes)
+    if session.get('username', None)['provider'] == 'Openstack':
+        nodes = get_openstack_node_catalog(get_connection_from_session())
+        return jsonify(nodes)
+    else:
+        return jsonify(None)
 
 
 @main.route('/getsecuritygroups', methods=['GET'])
 def getsecuritygroups():
-    sgroups = get_openstack_security_group_list(get_connection_from_session())
-    return jsonify(sgroups)
+    if session.get('username', None)['provider'] == 'Openstack':
+        sgroups = get_openstack_security_group_list(get_connection_from_session())
+        return jsonify(sgroups)
+    else:
+        return jsonify(None)
 
 
 @main.route('/getfloatingips', methods=['GET'])
 def getfloatingips():
-    floating_ips = get_floating_ips_catalog(get_connection_from_session())
-    return jsonify(floating_ips)
+    if session.get('username', None)['provider'] == 'Openstack':
+        floating_ips = get_floating_ips_catalog(get_connection_from_session())
+        if len(floating_ips) > 0:
+            return jsonify(floating_ips)
+        else:
+            return jsonify({'error': 'No floating IPs, delete unused and allocate a new one'})
+    else:
+        return jsonify(None)
+
+
+@main.route('/allocatefloatingip', methods=['POST'])
+def allocatefloatingip():
+    if session.get('username', None)['provider'] == 'Openstack':
+        return jsonify(allocate_floating_ip(get_connection_from_session()))
+    else:
+        return jsonify(None)
 
 
 @main.route('/instances', methods=['GET'])
@@ -129,34 +162,35 @@ def instances():
 def createnode():
     if 'username' in session:
         if 'keypair' in session:
-            try:
-                conn = get_connection_from_session()
-                instance_name = str(escape(request.form['instanceName']))
-                image = str(escape(request.form['image']))
-                flavor = str(escape(request.form['flavor']))
-                sgroup = str(escape(request.form['sgroup']))
+            if session.get('username', None)['provider'] == 'Openstack':
+                try:
+                    conn = get_connection_from_session()
+                    instance_name = str(escape(request.form['instanceName']))
+                    image = str(escape(request.form['image']))
+                    flavor = str(escape(request.form['flavor']))
+                    sgroup = str(escape(request.form['sgroup']))
 
-                key_name = session['keypair']['keyName']
-                key_path = session['keypair']['dir']
+                    key_name = session['keypair']['keyName']
+                    key_path = session['keypair']['dir']
 
-                import_key_pair(conn, key_name, get_public_key_path(key_path, key_name))
+                    import_key_pair(conn, key_name, get_public_key_path(key_path, key_name))
 
-                result = instantiate_node(
-                    conn,
-                    instance_name,
-                    image,
-                    flavor,
-                    key_name,
-                    sgroup
-                )
+                    result = instantiate_node(
+                        conn,
+                        instance_name,
+                        image,
+                        flavor,
+                        key_name,
+                        sgroup
+                    )
 
-                if result is True:
-                    return jsonify(True)
-                else:
-                    return jsonify({"error": str(result)})
+                    if result is True:
+                        return jsonify(True)
+                    else:
+                        return jsonify({"error": str(result)})
 
-            except Exception as e:
-                return jsonify({"error": str(e)})
+                except Exception as e:
+                    return jsonify({"error": str(e)})
         else:
             return jsonify({"error": "Keypair is not generated. Please, generate a keypair in user's menu"})
 
@@ -200,12 +234,13 @@ def checkkeypair():
 @main.route('/rebootnode', methods=['POST'])
 def rebootnode():
     if 'username' in session:
-        node_id = str(escape(request.form['instance']))
-        conn = get_connection_from_session()
-        if reboot_instance(conn, node_id):
-            return jsonify(True)
-        else:
-            return jsonify(False)
+        if session.get('username', None)['provider'] == 'Openstack':
+            node_id = str(escape(request.form['instance']))
+            conn = get_connection_from_session()
+            if reboot_instance(conn, node_id):
+                return jsonify(True)
+            else:
+                return jsonify(False)
     else:
         return jsonify({"error": "User is not logged in. Please log in"})
 
@@ -213,12 +248,13 @@ def rebootnode():
 @main.route('/stopnode', methods=['POST'])
 def stopnode():
     if 'username' in session:
-        node_id = str(escape(request.form['instance']))
-        conn = get_connection_from_session()
-        if stop_instance(conn, node_id):
-            return jsonify(True)
-        else:
-            return jsonify(False)
+        if session.get('username', None)['provider'] == 'Openstack':
+            node_id = str(escape(request.form['instance']))
+            conn = get_connection_from_session()
+            if stop_instance(conn, node_id):
+                return jsonify(True)
+            else:
+                return jsonify(False)
     else:
         return jsonify({"error": "User is not logged in. Please log in"})
 
@@ -226,12 +262,13 @@ def stopnode():
 @main.route('/startnode', methods=['POST'])
 def startnode():
     if 'username' in session:
-        node_id = str(escape(request.form['instance']))
-        conn = get_connection_from_session()
-        if start_instance(conn, node_id):
-            return jsonify(True)
-        else:
-            return jsonify(False)
+        if session.get('username', None)['provider'] == 'Openstack':
+            node_id = str(escape(request.form['instance']))
+            conn = get_connection_from_session()
+            if start_instance(conn, node_id):
+                return jsonify(True)
+            else:
+                return jsonify(False)
     else:
         return jsonify({"error": "User is not logged in. Please log in"})
 
@@ -239,10 +276,11 @@ def startnode():
 @main.route('/terminatenode', methods=['POST'])
 def terminatenode():
     if 'username' in session:
-        node = str(escape(request.form['instance']))
-        conn = get_connection_from_session()
-        terminate_instance(conn, node)
-        return jsonify(True)
+        if session.get('username', None)['provider'] == 'Openstack':
+            node = str(escape(request.form['instance']))
+            conn = get_connection_from_session()
+            terminate_instance(conn, node)
+            return jsonify(True)
     else:
         return jsonify({"error": "User is not logged in. Please log in"})
 
@@ -250,11 +288,23 @@ def terminatenode():
 @main.route('/attachfloatingip', methods=['POST'])
 def attachfloatingip():
     if 'username' in session:
-        node = str(escape(request.form['instance']))
-        floating_ip = str(escape(request.form['floating_ip']))
-        conn = get_connection_from_session()
-        result = attach_floating_ip(conn, floating_ip, node)
-        return jsonify(str(result))
+        if session.get('username', None)['provider'] == 'Openstack':
+            node = str(escape(request.form['instance']))
+            floating_ip = str(escape(request.form['floating_ip']))
+            conn = get_connection_from_session()
+            result = attach_floating_ip(conn, floating_ip, node)
+            return jsonify(str(result))
+    else:
+        return jsonify({"error": "User is not logged in. Please log in"})
+
+
+@main.route('/releasefloatingips', methods=['POST'])
+def releasefloatingips():
+    if 'username' in session:
+        if session.get('username', None)['provider'] == 'Openstack':
+            conn = get_connection_from_session()
+            result = release_unused_floating_ips(conn)
+            return jsonify(str(result))
     else:
         return jsonify({"error": "User is not logged in. Please log in"})
 

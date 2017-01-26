@@ -44,8 +44,22 @@
                             <ul class="dropdown-menu dropdown-menu-right">
                                 <li>
                                     <a href="#" data-bind="click: function () { $root.toggleFloatingIpDialog(id()); }">
-                                        <i class="fa fa-fw fa-plus-square-o"></i>
+                                        <i class="fa fa-fw fa-paperclip"></i>
                                         Attach floating IP
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a href="#" data-bind="click: function () { $root.allocateFloatingIp(); }">
+                                        <i class="fa fa-fw fa-plus-square-o"></i>
+                                        Allocate floating IP
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a href="#" data-bind="click: function () { $root.releaseFloatingIPs(); }">
+                                        <i class="fa fa-fw fa-eraser"></i>
+                                        Release unused floating IPs
                                     </a>
                                 </li>
 
