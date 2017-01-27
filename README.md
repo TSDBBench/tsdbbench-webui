@@ -12,8 +12,8 @@ Python 3.6, Apache Libcloud, Flask
    Linux: source venv/bin/activate <br />
    Windows: venv\Scripts\activate.bat <br />
 
-3. Install using pip: pip install -r requirements.txt <br />
-4. Run: python manage.py runserver <br />
+3. Install using pip: pip install -r requirements.txt (or pip3 install -r requirements.txt) <br />
+4. Run: python manage.py runserver (or python3 manage.py) <br />
 5. Connect using localhost:5000 <br />
 
 ## Project's structure
