@@ -6,7 +6,7 @@ Python 3.6, Apache Libcloud, Flask
 
 1. Create virtual environment: <br />
   a) navigate to project's folder <br />
-  b) Linux: python -m venv venv (basically, the same for Win) <br />
+  b) Linux: python -m venv venv (basically, the same for Win) (in some cases it's: python -m virtualenv venv ) <br />
 
 2. Activate virtual environment: <br />
    Linux: source venv/bin/activate <br />
