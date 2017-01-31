@@ -1,6 +1,7 @@
 from flask import render_template, redirect, url_for, session, request, current_app, escape, jsonify
 from app.libcloud_utils import *
 from app.ssh_utils import *
+from app.ssh_benchmark_controller import *
 from . import main
 import sys
 import time
@@ -312,5 +313,41 @@ def releasefloatingips():
 def ssh():
     if 'username' in session:
         return render_template('ssh.html', sshActive=True)
+    else:
+        return jsonify({"error": "User is not logged in. Please log in"})
+
+@main.route('/benchmark', methods=['GET', 'POST'])
+def benchmark():
+    if 'username' in session:
+        if request.method == 'POST':
+            #ajax benchmark execution
+            #start the benchmark through ssh
+            #benchmark results files will be returned when the process is finished
+            result_files = execute_benchmark_process()
+            response = jsonify(result_files)
+            response.headers.add('Access-Control-Allow-Origin', '*')
+
+            return jsonify(result_files)
+        else:
+            #render the benchmark view
+            return render_template('benchmark.html', benchmarkActive=True)
+    else:
+        return jsonify({"error": "User is not logged in. Please log in"})
+
+@main.route('/benchmark_progress', methods=['GET', 'POST'])
+def benchmark_progress():
+    if 'username' in session:
+        if request.method == 'POST':
+            progress = get_new_benchmark_progress_messages()
+            response = jsonify(progress)
+            response.headers.add('Access-Control-Allow-Origin', '*')
+
+            return response
+        else:
+            progress = get_benchmark_progress_messages()
+            response = jsonify(progress)
+            response.headers.add('Access-Control-Allow-Origin', '*')
+
+            return response
     else:
         return jsonify({"error": "User is not logged in. Please log in"})
