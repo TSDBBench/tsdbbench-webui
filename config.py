@@ -3,7 +3,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'zJodBOgCOq0sPWNogYQM'
     PROVIDERS = [
         {
             'provider': 'Openstack',
@@ -14,8 +14,16 @@ class Config:
     ]
     SESSION_TYPE = 'filesystem'
     KEYDIR = 'disposables'
-    VM_USER_NAME = 'vagrant'
+    RESULTDIR = 'benchmark_results'
     TSDBBENCH_SETTINGS = {
+        'home_folder': '/home/vagrant/TSDBBench/',
+        'results_folder': '/var/www/html/TSDBBench/',
+        'temp_folder': '/home/vagrant/tmp/',
+        'vagrant_files': '/home/vagrant/TSDBBench/vagrant_files/',
+        'config_file_path': '/home/vagrant/TSDBBench/vagrant_files/vagrantconf.rb',
+        'config_file_path_gen': '/home/vagrant/TSDBBench/vagrant_files/vagrantconf_gen.rb',
+        'config_file_path_db': '/home/vagrant/TSDBBench/vagrant_files/vagrantconf_db.rb',
+        'vm_user': 'vagrant',
         'provider': {
             'Openstack': {
                 'openstack_auth_url': 'http://129.69.209.131:5000/v2.0/tokens',
@@ -25,32 +33,30 @@ class Config:
                 'openstack.flavor': 'm1.larger'
             }
         },
-        'config_file_path': '/home/vagrant/TSDBBench/vagrant_files/vagrantconf.rb',
-        'config_file_path_gen': '/home/vagrant/TSDBBench/vagrant_files/vagrantconf_gen.rb',
-        'config_file_path_db': '/home/vagrant/TSDBBench/vagrant_files/vagrantconf_db.rb',
-        'supported_databases': {
-            'akumuli': ['cl1_rf1'],
-            'blueflood': ['cl1_rf1', 'cl5_rf1', 'cl5_rf2', 'cl5_rf5'],
-            'databus_rtable': ['cl1_rf1'],
-            'databus_rtstable': ['cl1_rf1'],
-            'databus_tstable': ['cl1_rf1'],
-            'druid': ['cl1_rf1', 'cl5_rf1', 'cl5_rf2', 'cl5_rf5'],
-            'elasticsearch': ['cl1_rf1', 'cl5_rf1'],
-            'gnocchi': ['cl1'],
-            'graphite': ['cl1_rf1'],
-            'h5serv': ['cl1_rf1'],
-            'influxdb': ['cl1_rf1', 'cl5_rf1', 'cl5_rf2', 'cl5_rf5'],
-            'kairosdb': ['cl1_rf1', 'cl5_rf1', 'cl5_rf2', 'cl5_rf5'],
-            'kairosdb_h2': ['cl1_rf1'],
-            'kdbplus': ['cl1_rf1'],
-            'monetdb': ['cl1_rf1'],
-            'mysql': ['cl1_rf1'],
-            'newts': ['cl1_rf1', 'cl5_rf1', 'cl5_rf2', 'cl5_rf5'],
-            'opentsdb': ['cl1_rf1', 'cl5_rf1', 'cl5_rf2', 'cl5_rf5'],
-            'postgresql': ['cl1_rf1'],
-            'rhombus': ['cl1_rf1', 'cl5_rf1', 'cl5_rf2', 'cl5_rf5'],
-            'seriesly': ['cl1_rf1']
-        }
+
+        'supported_databases': [
+            { 'name': 'akumuli', 'configs': ['cl1_rf1'] },
+            { 'name': 'blueflood', 'configs': ['cl1_rf1', 'cl5_rf1', 'cl5_rf2', 'cl5_rf5'] },
+            { 'name': 'databus_rtable', 'configs': ['cl1_rf1'] },
+            { 'name': 'databus_rtstable', 'configs': ['cl1_rf1'] },
+            { 'name': 'databus_tstable', 'configs': ['cl1_rf1'] },
+            { 'name': 'druid', 'configs': ['cl1_rf1', 'cl5_rf1', 'cl5_rf2', 'cl5_rf5'] },
+            { 'name': 'elasticsearch', 'configs': ['cl1_rf1', 'cl5_rf1'] },
+            { 'name': 'gnocchi', 'configs': ['cl1'] },
+            { 'name': 'graphite', 'configs': ['cl1_rf1'] },
+            { 'name': 'h5serv', 'configs': ['cl1_rf1'] },
+            { 'name': 'influxdb', 'configs': ['cl1_rf1', 'cl5_rf1', 'cl5_rf2', 'cl5_rf5'] },
+            { 'name': 'kairosdb', 'configs': ['cl1_rf1', 'cl5_rf1', 'cl5_rf2', 'cl5_rf5'] },
+            { 'name': 'kairosdb_h2', 'configs': ['cl1_rf1'] },
+            { 'name': 'kdbplus', 'configs': ['cl1_rf1'] },
+            { 'name': 'monetdb', 'configs': ['cl1_rf1'] },
+            { 'name': 'mysql', 'configs': ['cl1_rf1'] },
+            { 'name': 'newts', 'configs': ['cl1_rf1', 'cl5_rf1', 'cl5_rf2', 'cl5_rf5'] },
+            { 'name': 'opentsdb', 'configs': ['cl1_rf1', 'cl5_rf1', 'cl5_rf2', 'cl5_rf5'] },
+            { 'name': 'postgresql', 'configs': ['cl1_rf1'] },
+            { 'name': 'rhombus', 'configs': ['cl1_rf1', 'cl5_rf1', 'cl5_rf2', 'cl5_rf5'] },
+            { 'name': 'seriesly', 'configs': ['cl1_rf1'] }
+        ]
     }
 
     @staticmethod

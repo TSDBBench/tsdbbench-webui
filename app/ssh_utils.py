@@ -88,23 +88,139 @@ def make_connection(server_ip_address, user_name, key_file):
 
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        print("connecting")
         ssh.connect(hostname=server_ip_address, username=user_name, pkey=k)
-        print("connected")
         return ssh
     except Exception as exception:
         e = sys.exc_info()[0]
         print("Exception: " + str(exception))
         print(e)
         return False
+    except Exception as e:
+        print(e)
 
+
+def change_config_file(ssh, config_file_path, auth_url, username, password, tenant, image, image_url):
+    try:
+        ftp = ssh.open_sftp()
+        f = ftp.open(config_file_path, "r")
+        lines = f.readlines()
+        f.close()
+        f2 = ftp.open(config_file_path, "w")
+        for line in lines:
+            if 'openstack.openstack_auth_url' in line:
+                f2.write("    openstack.openstack_auth_url ='" + auth_url + "'\n")
+            elif 'openstack.username' in line:
+                f2.write("    openstack.username='" + username + "'\n")
+            elif 'openstack.password' in line:
+                f2.write("    openstack.password ='" + password + "'\n")
+            elif 'openstack.tenant_name' in line:
+                f2.write("    openstack.tenant_name ='" + tenant + "'\n")
+            elif 'openstack.image' in line:
+                f2.write("    openstack.image ='" + image + "'\n")
+            elif 'openstack.openstack_image_url' in line:
+                f2.write("    openstack.openstack_image_url ='" + image_url + "'\n")
+            else:
+                f2.write(line)
+        f2.close()
+        print("done")
+        return True
+    except Exception as e:
+        print(e)
+
+
+def change_gen_db_config_files(ssh, config_file_path, flavor):
+    ftp = ssh.open_sftp()
+    f = ftp.open(config_file_path, "r")
+    lines = f.readlines()
+    f.close()
+    f2 = ftp.open(config_file_path, "w")
+    for line in lines:
+        if 'openstack.flavor' in line:
+            f2.write("    openstack.flavor ='" + flavor + "'\n")
+        else:
+            f2.write(line)
+    f2.close()
+    print("done")
+    return
+
+
+def execute_command(ssh, command):
+    try:
+        sleeptime = 0.1
+        outdata, errdata = '', ''
+        ssh_transp = ssh.get_transport()
+        ssh_transp.window_size = 3 * 1024 * 1024
+
+        chan = ssh_transp.open_session()
+        # chan.settimeout(3 * 60 * 60)
+        chan.get_pty()
+        chan.setblocking(0)
+        chan.exec_command(command)
+        while True:  # monitoring process
+            # Reading from output streams
+            while chan.recv_ready():
+                output = str(chan.recv(1000))
+                print(output)
+            while chan.recv_stderr_ready():
+                errdata += str(chan.recv_stderr(1000))
+            if chan.exit_status_ready():  # If completed
+                break
+            time.sleep(sleeptime)
+        # retcode = chan.recv_exit_status()
+        # ssh_transp.close()
+
+        # print(str(outdata))
+        if errdata:
+            print(str(errdata))
+        return True
+    except Exception as e:
+        exc = sys.exc_info()
+        print(exc)
+        print(e)
+        return False
+
+
+def prepare_for_benchmark_execution(ssh_session, home_folder, temp_folder, results_folder):
+    try:
+        # clean temp folder
+        command_kill = "pkill -f python2"
+        mkdir = "mkdir -p " + temp_folder
+        clean_temp = "rm -rf " + temp_folder + "{*,.*}"
+        clean_results = 'find ' + home_folder + ' -type f -name "ycsb_*" -delete'
+        clean_logs = 'find ' + home_folder + ' -type f -name "*.log" -delete'
+        clean_results_folder = 'find ' + results_folder + ' -type f -name "ycsb_*" -delete'
+
+        print("Kill benchmark execution ")
+        execute_command(ssh_session, command_kill)
+        print("Create tmp if not exists")
+        execute_command(ssh_session, mkdir)
+        print("Clean tmp")
+        execute_command(ssh_session, clean_temp)
+        print("Clean old result files")
+        execute_command(ssh_session, clean_results)
+        print("Clean old .log files")
+        execute_command(ssh_session, clean_logs)
+        print("Clean old result files in result folder")
+        execute_command(ssh_session, clean_results_folder)
+
+        return True
+
+    except Exception as e:
+        print(e)
+        return False
 
 def check_connection(ssh):
     try:
         transport = ssh.get_transport()
         transport.send_ignore()
+        return True
     except EOFError as exception:
         e = sys.exc_info()[0]
         print("Exception: " + str(exception))
         print(e)
         return False
+
+def build_benchmark_execution_command(home_folder, temp_folder, vagrant_files, databases, provider):
+    result = "cd " + home_folder + " && ./TSDBBench.py -t " + temp_folder + " -f " + vagrant_files + " -d " + databases + " -w testworkloada -l --provider " + provider.lower() + " -m"
+    return result
+

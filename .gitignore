@@ -31,3 +31,5 @@ ENV/
 # App-specific stuff
 flask_session/
 app/disposables
+app/static/benchmark_results/*
+!app/static/benchmark_results/.gitkeep

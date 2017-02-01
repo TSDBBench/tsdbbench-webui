@@ -322,7 +322,7 @@ def get_floating_ip_by_node_id(conn, node_id):
     try:
         for fip in conn.ex_list_floating_ips():
             if fip.node_id == node_id:
-                return fip.ip_addr
+                return fip.ip_address
         return None
     except Exception as e:
         return e
