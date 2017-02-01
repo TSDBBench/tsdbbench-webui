@@ -187,8 +187,11 @@ def execute_benchmark_process():
 
     ssh_session.close()
 
-    #todo
     #release floating ips
+    if session.get('username', None)['provider'] == 'Openstack':
+        conn = get_connection_from_session()
+        result = release_unused_floating_ips(conn)
+        print (str(result))
 
     #return the results files
     return new_files
