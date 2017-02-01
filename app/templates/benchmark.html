@@ -76,9 +76,9 @@
 // testResults.push("http://192.168.209.154/TSDBBench/ycsb_combined_201701231253.html");
 
 var start_benchmark = function() {
-    var progressUpdateIntervalId = setInterval(get_new_benchmark_progress_messages, 2000);
+    // var progressUpdateIntervalId = setInterval(get_new_benchmark_progress_messages, 2000);
 
-    setTimeout(1000, get_benchmark_progress_messages());
+    // setTimeout(1000, get_benchmark_progress_messages());
     $.ajax({
       url: "http://localhost:5000/benchmark",
       type: 'POST',
@@ -86,12 +86,25 @@ var start_benchmark = function() {
         responseRaw = response;
         console.log(response);
         render_results(response);
-        clearInterval(progressUpdateIntervalId);
+        // clearInterval(progressUpdateIntervalId);
       },
       error: function (response) {
         console.log(response);
         responseObject = JSON.parse(response);
         console.log(responseObject);
+      }
+    });
+};
+
+var release_floating_ips = function () {
+    $.ajax({
+      url: "http://localhost:5000/releasefloatingips",
+      type: 'POST',
+      success: function (response) {
+        console.log(response);
+      },
+      error: function (response) {
+        console.log(response);
       }
     });
 };
