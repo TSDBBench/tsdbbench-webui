@@ -1,0 +1,115 @@
+
+
+
+
+
+<div class="row">
+    <form>
+        <div class="row">
+            <div class="col-sm-2 form-group"></div>
+            <div class="col-sm-6 form-group">
+                <div class="row">
+                    <div class="col-sm-7 form-group">
+                        <label>Control-VM instance</label>
+                    </div>
+
+                    <div class="col-sm-5 form-group text-right">
+                        <!-- ko if: selectedInstanceIp -->
+                            <span class="form-control-static" data-bind="text: selectedInstanceIp"></span>
+                        <!-- /ko -->
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12 form-group">
+                        <select class="form-control" data-bind="options: nodesList,
+                            optionsCaption: 'Choose instance', optionsText: 'name',
+                            value: selectedInstance, click: function() {errorObj().wrongKey(undefined); sshEstablished(undefined); }">
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col-sm-2 form-group">
+                <div class="row">
+                    <div class="col-sm-12 form-group">
+                        <label>Connection</label>
+                        <!-- ko if: sshEstablished -->
+                            <i class="fa fa-fw fa-check text-success"></i>
+                        <!-- /ko -->
+
+                        <!-- ko ifnot: sshEstablished -->
+                            <i class="fa fa-fw fa-times text-danger"></i>
+                        <!-- /ko -->
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12 form-group">
+                        <button type="button" class="btn btn-default btn-block" data-bind="enable: selectedInstanceIp, click: function() { testSSH(selectedInstanceIp()); }">
+                            <i class="fa fa-fw fa-terminal"></i>
+                            Test SSH
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ko if: errorObj().wrongKey() -->
+        <div class="row">
+            <div class="col-sm-2 form-group"></div>
+            <div class="col-sm-8 form-group text-center">
+                <div class="alert alert-danger" role="alert" data-bind="text: errorObj().wrongKey()">
+                </div>
+            </div>
+        </div>
+        <!-- /ko -->
+
+        <!-- ko if: sshEstablished -->
+        <div class="row">
+            <div class="col-sm-2 form-group"></div>
+            <div class="col-sm-8 form-group">
+                <div class="form-group">
+                    <label>Authorization URL</label>
+                    <input type="text" placeholder="Authorization URL" class="form-control" data-bind="value: benchmarkConfigs()['openstack_auth_url']">
+                </div>
+                <div class="form-group">
+                    <label>Tenant name</label>
+                    <input type="text" placeholder="Tenant name" class="form-control" data-bind="value: benchmarkConfigs()['openstack.tenant_name']">
+                </div>
+                <div class="form-group">
+                    <label>Image</label>
+                    <select class="form-control" data-bind="options: imagesList,
+                            optionsCaption: 'Choose image', optionsText: 'name',
+                            value: selectedImage">
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Image URL</label>
+                    <input type="text" placeholder="Image URL" class="form-control" data-bind="value: benchmarkConfigs()['openstack.openstack_image_url']">
+                </div>
+                <div class="form-group">
+                    <label>Flavor</label>
+                    <select class="form-control" data-bind="options: flavorsList,
+                            optionsCaption: 'Choose flavor', optionsText: 'name',
+                            value: selectedFlavor">
+                    </select>
+                </div>
+            </div>
+        </div>
+        <!-- /ko -->
+
+
+        <div class="row">
+            <div class="col-sm-12 form-group text-center">
+                <button type="button" class="btn btn-primary next-step" data-bind="enable: sshEstablished">Save and continue
+                </button>
+            </div>
+        </div>
+
+
+
+    </form>
+</div>
+
+

@@ -1,0 +1,69 @@
+
+<div class="row">
+    <form>
+        <div class="row">
+            <div class="col-sm-2 form-group"></div>
+            <div class="col-sm-8 form-group">
+                <div class="row">
+                    <div class="col-sm-6 form-group">
+                        <label>Database</label>
+                        <select class="form-control" data-bind="options: databaseList,
+                            optionsCaption: 'Choose database',
+                            optionsText: 'name',
+                            value: selectedDatabase">
+                        </select>
+                    </div>
+
+                    <div class="col-sm-4 form-group">
+                        <label>Configuration</label>
+                        <!-- ko ifnot: selectedDatabase -->
+                        <select class="form-control" data-bind="optionsCaption: 'Select configuration'"></select>
+                        <!-- /ko -->
+                        <!-- ko with: selectedDatabase -->
+                        <select class="form-control" data-bind="options: configs,
+                            optionsCaption: 'Select configuration',
+                            optionsText: $data,
+                            value: $parent.selectedConfiguration">
+                        </select>
+                        <!-- /ko -->
+                    </div>
+                    <div class="col-sm-1 form-group">
+                        <label>Add</label>
+                        <button class="btn btn-default" data-bind="enable: selectedDatabase && selectedConfiguration, click: addDatabase">
+                            <i class="fa fa-fw fa-plus"></i>
+
+                        </button>
+                    </div>
+
+
+                </div>
+
+                <!-- ko if: selectedDatabasesList().length > 0 -->
+                <div class="row">
+                    <div class="col-sm-10 form-group">
+                        <label>Selected databases:</label>
+                        <select class="form-control" multiple="multiple" height="3" data-bind="options: selectedDatabasesList, selectedOptions: databasesToRemove"></select>
+                    </div>
+
+                    <div class="col-sm-1 form-group">
+                        <label>Remove</label>
+                        <button data-bind="click: removeSelectedDatabases, enable: databasesToRemove().length > 0"><i class="fa fa-fw fa-minus"></i></button>
+                    </div>
+
+                </div>
+                <!-- /ko -->
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12 form-group text-center">
+                <button type="button" class="btn btn-default prev-step">Previous</button>
+                <button type="button" class="btn btn-primary next-step" data-bind="enable: selectedDatabasesList().length > 0, click: function() { saveChosenParams(); }">Save and continue</button>
+            </div>
+        </div>
+
+
+
+    </form>
+</div>

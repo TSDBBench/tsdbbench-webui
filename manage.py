@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 import os
 from app import create_app
-from flask_script import Manager, Shell
+# from flask_script import Manager, Shell
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
-app.run(threaded=True)
+if __name__ == '__main__':
+    app.run(threaded=True)
 
 # couldnt get it to work with the rest of the code
 # I'm just gonna comment it out

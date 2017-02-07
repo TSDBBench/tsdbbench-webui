@@ -3,11 +3,11 @@ cffi==1.9.1
 click==6.7
 cryptography==1.7.1
 Flask==0.12
-Flask-Script==2.0.5
 Flask-Session==0.3.0
 idna==2.2
 itsdangerous==0.24
 Jinja2==2.9.4
+lxml==3.7.2
 MarkupSafe==0.23
 paramiko==2.1.1
 pyasn1==0.1.9

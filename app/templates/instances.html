@@ -13,13 +13,8 @@
     <div class="row">
         <div class="col-lg-12">
             <h1 class="page-header">
-                Instances <small>some description</small>
+                Instances control panel
             </h1>
-            <ol class="breadcrumb">
-                <li class="active">
-                    <i class="fa fa-dashboard"></i> Dashboard
-                </li>
-            </ol>
         </div>
     </div>
     <!-- /.row -->
@@ -30,14 +25,31 @@
 
     <!-- Instances heading and button row -->
     <div class="row">
-        <div class="col-lg-4">
-            <h2>Instances List</h2>
-        </div>
-        <div class="col-lg-8">
-            <button type="button" class="btn btn-default pull-right button-margin-top" data-bind="click: function () { toggleCreateInstanceDialog(); }">
-                <i class="fa fa-fw fa-plus"></i>
-                Create instance
-            </button>
+        <div class="col-lg-12">
+            <div class="row">
+                <div class="col-lg-12 button-margin text-right">
+                    <div class="btn-group" role="group" aria-label="...">
+
+                        <button type="button" class="btn btn-default" data-bind="click: function () { toggleCreateInstanceDialog(); }">
+                            <i class="fa fa-fw fa-plus"></i>
+                            Create instance
+                        </button>
+
+                        <button type="button" class="btn btn-default" data-bind="click: function () { allocateFloatingIp(); }">
+                            <i class="fa fa-fw fa-plus-square-o"></i>
+                            Generate floating IP
+                        </button>
+
+                        <button type="button" class="btn btn-default" data-bind="click: function () { releaseFloatingIPs(); }">
+                            <i class="fa fa-fw fa-eraser"></i>
+                            Release floating IPs
+                        </button>
+
+                    </div>
+
+                </div>
+            </div>
+
         </div>
     </div>
     <!-- /.row -->
@@ -54,4 +66,5 @@
 
 {% block body_jscripts %}
     {{ super() }}
+    <script src="static/js/main.js"></script>
 {% endblock %}

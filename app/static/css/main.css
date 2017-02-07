@@ -216,8 +216,8 @@ select:-moz-focusring {
   overflow-y: visible !important;
 }
 
-.button-margin-top {
-    margin-top: 20px;
+.button-margin {
+    margin: 15px 0 10px 0;
 }
 
 #pleaseWaitDialog {

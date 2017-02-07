@@ -1,0 +1,85 @@
+<div class="row">
+    <section>
+        <div class="wizard">
+            <div class="wizard-inner">
+                <div class="connecting-line"></div>
+                <ul class="nav nav-tabs" role="tablist">
+
+                    <li role="presentation" class="active">
+                        <a href="#step1" data-toggle="tab" aria-controls="step1" role="tab" title="Step 1">
+                            <span class="round-tab">
+                                <i class="fa fa-fw fa-cubes"></i>
+                            </span>
+                        </a>
+                    </li>
+
+                    <li role="presentation" class="disabled">
+                        <a href="#step2" data-toggle="tab" aria-controls="step2" role="tab" title="Step 2">
+                            <span class="round-tab">
+                                <i class="fa fa-fw fa-database"></i>
+                            </span>
+                        </a>
+                    </li>
+
+                    <li role="presentation" class="disabled">
+                        <a href="#step3" data-toggle="tab" aria-controls="step3" role="tab" title="Step 3">
+                            <span class="round-tab">
+                                <i class="fa fa-fw fa-rocket"></i>
+                            </span>
+                        </a>
+                    </li>
+
+                    <li role="presentation" class="disabled">
+                        <a href="#complete" data-toggle="tab" aria-controls="complete" role="tab" title="Complete" >
+                            <span class="round-tab">
+                                <i class="fa fa-fw fa-bar-chart"></i>
+                            </span>
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+
+            <form role="form">
+                <div class="tab-content">
+                    <div class="tab-pane active" role="tabpanel" id="step1">
+                        <h3 class="text-center">Configure Control-VM instance</h3>
+                        <p class="text-center">Specify a Control-VM instance, test SSH connection and edit its configuration files</p>
+
+                        {% include 'partials/benchmarking/instance_config_form.html' %}
+
+
+                    </div>
+
+                    <div class="tab-pane" role="tabpanel" id="step2">
+                        <h3 class="text-center">Choose Databases</h3>
+                        <p class="text-center">Specify which TSDBs to use for the benchmark</p>
+
+                        {% include 'partials/benchmarking/database_choice_form.html' %}
+
+                    </div>
+
+
+                    <div class="tab-pane" role="tabpanel" id="step3">
+                        <h3 class="text-center">Execute Benchmark</h3>
+                        <p class="text-center">Check your choice of parameters and launch the execution</p>
+
+                        {% include 'partials/benchmarking/chosen_params_form.html' %}
+
+                    </div>
+
+                    <div class="tab-pane" role="tabpanel" id="complete">
+                        <h3 class="text-center">Benchmark results</h3>
+                        <p class="text-center">Benchmark execution progress and results</p>
+
+                        {% include 'partials/benchmarking/logs_and_results.html' %}
+
+                    </div>
+
+                    <div class="clearfix"></div>
+
+                </div>
+            </form>
+        </div>
+    </section>
+</div>

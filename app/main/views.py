@@ -5,6 +5,9 @@ from app.ssh_benchmark_controller import *
 from . import main
 import sys
 import time
+import re
+import urllib.request
+import lxml.html
 
 
 def get_connection_from_session():
@@ -103,6 +106,12 @@ def getdatabases():
     return jsonify(current_app.config["TSDBBENCH_SETTINGS"]['supported_databases'])
 
 
+@main.route('/getbenchmarkconfigs', methods=['GET'])
+def getbenchmarkconfigs():
+    name = session['username']['provider']
+    return jsonify(current_app.config["TSDBBENCH_SETTINGS"]['provider'][name])
+
+
 @main.route('/getflavors', methods=['GET'])
 def getflavors():
     if session.get('username', None)['provider'] == 'Openstack':
@@ -157,6 +166,9 @@ def instances():
     else:
         return redirect(url_for('.index'))
 
+@main.route('/debugSession', methods=['GET'])
+def debugSession():
+    return jsonify(session["keypair"])
 
 @main.route('/createnode', methods=['POST'])
 def createnode():
@@ -197,25 +209,38 @@ def createnode():
     else:
         return jsonify({"error": "User is not logged in. Please log in"})
 
+def generate_new_key_file():
+    ts = str(int(time.time()))
+    key = session['username']['user'].replace(".", "_") + ts
+    directory = os.path.join(current_app.root_path, current_app.config["KEYDIR"])
+    result = generate_key_pair(directory, key)
+    if result:
+        session['keypair'] = {
+            "dir": directory,
+            "keyName": key
+        }
+        return True
+    else:
+        return False
 
 @main.route('/genkeypair', methods=['POST'])
 def genkeypair():
     if 'username' in session:
+        shouldGenerateNewFile = True
         if 'keypair' in session:
-            return jsonify(True)
+            #check if key file exists
+            #generate a new one if it does not
+            keyDir = session['keypair']["dir"]
+            keyFile = session['keypair']["keyName"]
+            keyFilePath = keyDir + '/' + keyFile + "_private.pem"
+            if(check_file_exists(keyFilePath)):
+                shouldGenerateNewFile = False
+
+        if shouldGenerateNewFile:
+            is_new_file_generated = generate_new_key_file()
+            return jsonify(is_new_file_generated)
         else:
-            ts = str(int(time.time()))
-            key = session['username']['user'].replace(".", "_") + ts
-            directory = os.path.join(current_app.root_path, current_app.config["KEYDIR"])
-            result = generate_key_pair(directory, key)
-            if result:
-                session['keypair'] = {
-                    "dir": directory,
-                    "keyName": key
-                }
-                return jsonify(True)
-            else:
-                return jsonify(False)
+            return jsonify(True)
     else:
         return jsonify({"error": "User is not logged in. Please log in"})
 
@@ -224,7 +249,7 @@ def genkeypair():
 def checkkeypair():
     if 'username' in session:
         if 'keypair' in session:
-            return jsonify(True)
+            return jsonify(session['keypair']['keyName'])
         else:
             return jsonify(False)
     else:
@@ -349,5 +374,234 @@ def benchmark_progress():
             response.headers.add('Access-Control-Allow-Origin', '*')
 
             return response
+    else:
+        return jsonify({"error": "User is not logged in. Please log in"})
+
+@main.route('/getnodefloatingip', methods=['GET'])
+def getnodefloatingip():
+    if 'username' in session:
+        if session.get('username', None)['provider'] == 'Openstack':
+            node_id = str(escape(request.args.get('node')))
+            conn = get_connection_from_session()
+            result = get_floating_ip_by_node_id(conn, node_id)
+            return jsonify(str(result))
+    else:
+        return jsonify({"error": "User is not logged in. Please log in"})
+
+
+@main.route('/testssh', methods=['POST'])
+def testssh():
+    if 'username' in session:
+        try:
+            tsdbbench_settings = current_app.config["TSDBBENCH_SETTINGS"]
+            server_ip = str(escape(request.form['server_ip']))
+            key = get_private_key_path(session['keypair']['dir'], session['keypair']['keyName'])
+            ssh = make_connection(
+                server_ip,
+                tsdbbench_settings['vm_user'],
+                key
+            )
+            ssh.close()
+            return jsonify(True)
+
+        except Exception as e:
+            print(e, file=sys.stderr)
+            return jsonify(False)
+
+    else:
+        return jsonify({"error": "User is not logged in. Please log in"})
+
+
+@main.route('/sshexecute', methods=['POST'])
+def sshexecute():
+    if 'username' in session:
+        if session.get('username', None)['provider'] == 'Openstack':
+            tsdbbench_settings = current_app.config["TSDBBENCH_SETTINGS"]
+
+            # save POSTed data
+            server_ip = str(escape(request.form['server_ip']))
+            databases = str(escape(request.form['databases']))
+            auth_url = str(escape(request.form['auth_url']))
+            tenant = str(escape(request.form['tenant']))
+            image = str(escape(request.form['image']))
+            image_url = str(escape(request.form['image_url']))
+            flavor = str(escape(request.form['flavor']))
+
+            # path to private key
+            key = get_private_key_path(session['keypair']['dir'], session['keypair']['keyName'])
+
+            # establish SSH connection
+            ssh = make_connection(server_ip, tsdbbench_settings['vm_user'], key)
+
+            # edit config files
+            change_config_file(ssh, tsdbbench_settings['config_file_path'], auth_url,session['username']['user'], session['username']['p'], tenant, image, image_url)
+            change_gen_db_config_files(ssh, tsdbbench_settings['config_file_path_gen'], flavor)
+            change_gen_db_config_files(ssh, tsdbbench_settings['config_file_path_db'], flavor)
+
+            # MAIN BENCHMARK EXECUTION BLOCK
+            home_folder = tsdbbench_settings['home_folder']
+            temp_folder = tsdbbench_settings['temp_folder']
+            vagrant_files = tsdbbench_settings['vagrant_files']
+            results_folder = tsdbbench_settings['results_folder']
+
+            # execute commands
+            prepare_for_benchmark_execution(ssh, home_folder, temp_folder, results_folder)
+
+            # build commands
+            main_command = build_benchmark_execution_command(home_folder, temp_folder, vagrant_files, databases, session['username']['provider'])
+            copy_results_command = 'cd ' + home_folder + ' && cp ycsb_*.html ' + results_folder
+
+            execute_command(ssh, main_command)
+            execute_command(ssh, copy_results_command)
+
+            sftp = ssh.open_sftp()
+            benchmark_results = sftp.listdir(results_folder)
+            directory = os.path.join(current_app.root_path, 'static', current_app.config["RESULTDIR"])
+            check_directory_exists(directory)
+
+            new_files = []
+
+            resulting_html_list = []
+
+            for f in benchmark_results:
+                remote_file_path = 'http://' + server_ip + '/TSDBBench/' + f
+                print("new files created: " + remote_file_path)
+                new_files.append(remote_file_path)
+
+                file = {'name': f, 'contents': '', 'url': ''}
+
+                with urllib.request.urlopen(remote_file_path) as url:
+                    file_output = url.read()
+
+                    doc = lxml.html.fromstring(file_output)
+                    link = lxml.html.fromstring('<link rel="stylesheet" href="/static/css/iframes_results.css">').find('.//link')
+                    head = doc.find('.//head')
+                    title = head.find('title')
+                    if title == None:
+                        where = 0
+                    else:
+                        where = head.index(title) + 1
+                    head.insert(where, link)
+
+                    file_output = lxml.html.tostring(doc)
+
+                    backend_url = directory + '/' + f
+                    with open(backend_url, 'wb') as ofile:
+                        ofile.write(file_output)
+
+                    static_url = os.path.join('static', current_app.config["RESULTDIR"], f)
+                    file['contents'] = file_output.decode('utf-8')
+                    file['url'] = static_url
+                    file['remote_url'] = remote_file_path
+                    resulting_html_list.append(file)
+
+            sftp.close()
+            ssh.close()
+
+            # release floating ips
+            conn = get_connection_from_session()
+            release_unused_floating_ips(conn)
+
+            return jsonify(resulting_html_list)
+
+    else:
+        return jsonify({"error": "User is not logged in. Please log in"})
+
+
+@main.route('/sshdebuglog', methods=['GET'])
+def sshdebuglog():
+    if 'username' in session:
+        if session.get('username', None)['provider'] == 'Openstack':
+            try:
+                tsdbbench_settings = current_app.config["TSDBBENCH_SETTINGS"]
+
+                # GET server ip
+                server_ip = str(escape(request.args.get('server_ip')))
+
+                # path to private key
+                key = get_private_key_path(session['keypair']['dir'], session['keypair']['keyName'])
+
+                # establish SSH connection and get all debug_*.log filenames
+                ssh = make_connection(server_ip, tsdbbench_settings['vm_user'], key)
+                stdin, stdout, stderr = ssh.exec_command(''.join(('find ', tsdbbench_settings['home_folder'], ' -name debug_*.log')))
+                file_list_binary = stdout.read().splitlines()
+                newest_log_name = None
+                ts = 0
+
+                for f in file_list_binary:
+                    file_string = f.decode('utf-8')
+                    file_ts = int(re.search(r'\d+', file_string).group())
+                    if file_ts > ts:
+                        ts = file_ts
+                        newest_log_name = file_string
+
+                sftp = ssh.open_sftp()
+
+                if newest_log_name != None:
+                    remote_file = sftp.open(newest_log_name)
+                    file_contents = []
+                    try:
+                        for line in remote_file:
+                            file_contents.append(line.replace('\n', ''))
+                    finally:
+                        remote_file.close()
+                    sftp.close()
+                    ssh.close()
+                    return jsonify(file_contents)
+
+                else:
+                    sftp.close()
+                    ssh.close()
+                    return jsonify({"error": "There is no log file in the directory"})
+            except Exception as e:
+                return jsonify({"error": e})
+        else:
+            return jsonify({"error": "Provider is not yet supported"})
+    else:
+        return jsonify({"error": "User is not logged in. Please log in"})
+
+
+@main.route('/sshbenchmarkresults', methods=['GET'])
+def sshbenchmarkresults():
+    if 'username' in session:
+        if session.get('username', None)['provider'] == 'Openstack':
+            tsdbbench_settings = current_app.config["TSDBBENCH_SETTINGS"]
+            results_folder = tsdbbench_settings['results_folder']
+
+            # GET server ip
+            server_ip = str(escape(request.args.get('server_ip')))
+
+            # path to private key
+            key = get_private_key_path(session['keypair']['dir'], session['keypair']['keyName'])
+
+            # establish SSH connection and get all debug_*.log filenames
+            ssh = make_connection(server_ip, tsdbbench_settings['vm_user'], key)
+
+            stdin, stdout, stderr = ssh.exec_command(
+                ''.join(('find ', tsdbbench_settings['home_folder'], ' -name ycsb_*.html')))
+
+            file_list_binary = stdout.read().splitlines()
+            result_names = []
+
+            for f in file_list_binary:
+                result_names.append(f.decode('utf-8'))
+
+            print(result_names, file = sys.stderr)
+
+            sftp = ssh.open_sftp()
+
+
+
+            result_names = sftp.listdir(results_folder)
+            results = []
+            for r in result_names:
+                results.append(''.join(('http://', server_ip, '/TSDBBench/', r)))
+
+            sftp.close()
+            ssh.close()
+
+            return jsonify(results)
+        else:
+            return jsonify({"error": "Provider is not yet supported"})
     else:
         return jsonify({"error": "User is not logged in. Please log in"})

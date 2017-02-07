@@ -2,36 +2,33 @@
 
 {% block title %}TSDBBench Web UI{% endblock %}
 
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="/static/css/benchmarking.css"/>
+{% endblock head %}
+
+
 {% block main_page_heading %}
 
-    <!-- Page Heading -->
+    <!-- Page Heading
     <div class="row">
         <div class="col-lg-12">
             <h1 class="page-header">
-                SSH control <small>Establish connection, issue commands, ...</small>
+                Run Benchmark
             </h1>
-            <ol class="breadcrumb">
-                <li class="active">
-                    <i class="fa fa-dashboard"></i> Dashboard
-                </li>
-            </ol>
         </div>
-    </div>
+    </div> -->
     <!-- /.row -->
 
 {% endblock main_page_heading %}
 
 {% block page_content %}
 
-    <!-- Instances heading and button row -->
-    <div class="row">
-        <div class="col-lg-12">
-            <h2>Instances List</h2>
-        </div>
-    </div>
-    <!-- /.row -->
+    {% include 'partials/benchmarking/step_wizard.html' %}
 
-    {% include 'partials/instances/instances_ssh.html' %}
-    {% include 'partials/instances/dimmer_processing_modal.html' %}
-    
 {% endblock page_content %}
+
+{% block body_jscripts %}
+    {{ super() }}
+    <script src="static/js/benchmarking.js"></script>
+{% endblock %}

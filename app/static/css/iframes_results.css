@@ -1,0 +1,36 @@
+
+.bk-grid-column .bk-layout-fixed {
+    width: 100%;
+}
+
+.bk-toolbar-box .bk-layout-scale_width {
+    width: 100%;
+}
+
+.bk-toolbar-wrapper .bk-layout-scale_width {
+    width: 100%;
+}
+
+.bk-grid-column .bk-layout-fixed {
+    width: 100%;
+}
+
+.bk-grid-row .bk-layout-fixed {
+    width: 100%;
+}
+
+.bk-plot-layout bk-layout-fixed {
+    width: 49%;
+}
+
+.bk-plot-wrapper {
+    width: 49%;
+}
+
+.bk-canvas-wrapper {
+    width: 49%;
+}
+
+.bk-canvas {
+    width: 49%;
+}
