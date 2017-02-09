@@ -579,7 +579,11 @@ $(function () {
                                 .uuid(data.uuid);
 
                             nodesList().push(newInstance);
-                            // attach floating ip
+
+                            //this does not work
+                            selectedInstance(newInstance);
+
+                            //save the node_id of the newly created vm
                             console.log(data.id);
                             node_id(data.id);
                             autoCreateControlVM();
