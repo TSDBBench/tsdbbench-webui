@@ -115,6 +115,7 @@ $(function () {
             controlVmDeleted = ko.observable(false),
             floating_ip_id = ko.observable(),
             node_id = ko.observable(),
+            benchmarkFinished = ko.observable(false),
             initWizard = function() {
                 //Initialize tooltips
                 $('.nav-tabs > li a[title]').tooltip();
@@ -288,6 +289,7 @@ $(function () {
                     success: function(data) {
                         benchmarkResults(data);
                         benchmarkIsRunning(false);
+                        benchmarkFinished(true);
                         clearInterval(logging);
                         /*clearInterval(partialResults);*/
                     }
@@ -795,28 +797,26 @@ $(function () {
                 });
             },
             downloadBenchmarkResults = function() {
-                console.log("about to download benchmark results");
-                for (var i = 0; i < benchmarkResults().length; i++) {
-                    console.log(benchmarkResults()[i]);
-                    $.ajax({
-                        type: "GET",
-                        url: "/downloadbenchmarkresult",
-                        data: {"result_to_download": benchmarkResults()[i]},
-                        success: function(data) {
-                            console.log("benchmark result " + benchmarkResults()[i] + " downloaded");
-                        }
-                    }).fail( function( xhr, status ) {
-                        isLoading(false);
-                        if( status == "timeout" ) {
-                            console.log("timeout");
-                        }
-                        else {
-                            console.log(xhr);
-                            if(status) console.log(status);
-                            console.log('another error');
-                        }
-                    });
 
+                console.log("downloading benchmark results");
+                for (var i = 0; i < benchmarkResults().length; i++) {
+                    var url = benchmarkResults()[i].url;
+                    var name = benchmarkResults()[i].name;
+
+                    var req = new XMLHttpRequest();
+                    req.open("GET", url, true);
+                    req.responseType = "blob";
+
+                    req.onload = function (event) {
+                      var blob = req.response;
+                      console.log(blob.size);
+                      var link=document.createElement('a');
+                      link.href=window.URL.createObjectURL(blob);
+                      link.download= name;
+                      link.click();
+                    };
+
+                    req.send();
                 }
             }
             ;
@@ -866,7 +866,8 @@ $(function () {
             controlVmDeleted: controlVmDeleted,
             downloadBenchmarkResults: downloadBenchmarkResults,
             deleteBenchmarkResults: deleteBenchmarkResults,
-            deleteControlVm: deleteControlVm
+            deleteControlVm: deleteControlVm,
+            benchmarkFinished: benchmarkFinished
         };
 
     }();

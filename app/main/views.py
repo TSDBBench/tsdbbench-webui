@@ -645,19 +645,3 @@ def deletebenchmarkresults():
         return jsonify(True)
     else:
         return jsonify({"error": "User is not logged in. Please log in"})
-
-@main.route('/downloadbenchmarkresult', methods=['GET'])
-def downloadbenchmarkresult():
-    if 'username' in session:
-        result_to_download = str(escape(request.form['result_to_download']))
-        print(result_to_download)
-        lastIndex = r.rfind("/")
-        fileName = r[lastIndex+1:]
-        filePath = tsdbbench_settings['results_folder'] + "/" + fileName
-        print("file to download")
-        print(filePath)
-        # deleteFile(filePath)
-        # return send_from_directory(directory=tsdbbench_settings['results_folder'], filename=fileName)
-        return jsonify(True)
-    else:
-        return jsonify({"error": "User is not logged in. Please log in"})
