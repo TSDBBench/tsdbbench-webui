@@ -37,6 +37,14 @@
                         </a>
                     </li>
 
+                    <li role="presentation" class="disabled">
+                        <a href="#cleanup" data-toggle="tab" aria-controls="cleanup" role="tab" title="Cleanup" >
+                            <span class="round-tab">
+                                <i class="fa fa-fw fa-recycle"></i>
+                            </span>
+                        </a>
+                    </li>
+
                 </ul>
             </div>
 
@@ -73,6 +81,14 @@
                         <p class="text-center">Benchmark execution progress and results</p>
 
                         {% include 'partials/benchmarking/logs_and_results.html' %}
+
+                    </div>
+
+                    <div class="tab-pane" role="tabpanel" id="cleanup">
+                        <h3 class="text-center">Cleanup</h3>
+                        <p class="text-center">Control VM and results cleanup</p>
+
+                        {% include 'partials/benchmarking/cleanup.html' %}
 
                     </div>
 
