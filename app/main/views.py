@@ -621,3 +621,22 @@ def sshbenchmarkresults():
             return jsonify({"error": "Provider is not yet supported"})
     else:
         return jsonify({"error": "User is not logged in. Please log in"})
+
+
+@main.route('/deletebenchmarkresults', methods=['POST', 'DELETE'])
+def deletebenchmarkresults():
+    if 'username' in session:
+        results_to_delete = str(escape(request.form['results_to_delete']))
+        #todo delete all result files in results_to_delete
+        return jsonify(True)
+    else:
+        return jsonify({"error": "User is not logged in. Please log in"})
+
+@main.route('/deletecontrolvm', methods=['POST', 'DELETE'])
+def deletecontrolvm():
+    if 'username' in session:
+        node_id = str(escape(request.form['node_id']))
+        #todo delete vm with node_id
+        return jsonify(True)
+    else:
+        return jsonify({"error": "User is not logged in. Please log in"})
