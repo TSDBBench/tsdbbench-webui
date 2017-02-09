@@ -113,6 +113,7 @@ $(function () {
             }),
             selectedInstanceIp = ko.observable(),
             //selectedInstanceKeyCompatible = ko.computed(),
+            resultsDeleted = ko.observable(false),
             initWizard = function() {
                 //Initialize tooltips
                 $('.nav-tabs > li a[title]').tooltip();
@@ -694,6 +695,77 @@ $(function () {
             autoAttachFloatingIp = function(node_id) {
                 // retrieve a list of free floating ips, attach the first available ip to the provided node_id
                 getFloatingIpList(node_id ,attachFloatingIp);
+            },
+            deleteBenchmarkResults = function() {
+                console.log("about to delete benchmark results: ");
+                console.log(benchmarkResults());
+                $.ajax({
+                    type: "DELETE",
+                    url: "/deleteBenchmarkResults",
+                    data: {"results_to_delete": benchmarkResults()},
+                    success: function(data) {
+                        console.log("benchmark result deleted ");
+                        resultsDeleted(data);
+                    }
+                }).fail( function( xhr, status ) {
+                    isLoading(false);
+                    if( status == "timeout" ) {
+                        console.log("timeout");
+                    }
+                    else {
+                        console.log(xhr);
+                        if(status) console.log(status);
+                        console.log('another error');
+                    }
+                });
+            },
+            deleteControlVm = function() {
+                console.log("about to delete control vm with node_id: " + selectedInstance().id);
+                //todo delete control vm
+                $.ajax({
+                    type: "DELETE",
+                    url: "/terminatenode",
+                    data: {"instance": selectedInstance().id},
+                    success: function(data) {
+                        console.log("controlVmDeleted " + selectedInstance().id);
+                        controlVmDeleted(data);
+                    }
+                }).fail( function( xhr, status ) {
+                    isLoading(false);
+                    if( status == "timeout" ) {
+                        console.log("timeout");
+                    }
+                    else {
+                        console.log(xhr);
+                        if(status) console.log(status);
+                        console.log('another error');
+                    }
+                });
+            },
+            downloadBenchmarkResults = function() {
+                console.log("about to download benchmark results");
+                for (var i = 0; i < benchmarkResults().length; i++) {
+                    console.log(benchmarkResults()[i]);
+                    $.ajax({
+                        type: "GET",
+                        url: "/downloadbenchmarkresult",
+                        data: {"result_to_download": benchmarkResults()[i]},
+                        success: function(data) {
+                            console.log("benchmark result " + benchmarkResults()[i] + " downloaded");
+                        }
+                    }).fail( function( xhr, status ) {
+                        isLoading(false);
+                        if( status == "timeout" ) {
+                            console.log("timeout");
+                        }
+                        else {
+                            console.log(xhr);
+                            if(status) console.log(status);
+                            console.log('another error');
+                        }
+                    });
+
+                }
             }
             ;
 
@@ -737,7 +809,12 @@ $(function () {
             sshExecuteBenchmark: sshExecuteBenchmark,
             sshEstablished: sshEstablished,
             testSSH: testSSH,
-            autoCreateControlVM: autoCreateControlVM
+            autoCreateControlVM: autoCreateControlVM,
+            resultsDeleted: resultsDeleted,
+            controlVmDeleted: controlVmDeleted,
+            downloadBenchmarkResults: downloadBenchmarkResults,
+            deleteBenchmarkResults: deleteBenchmarkResults,
+            deleteControlVm: deleteControlVm
         };
 
     }();

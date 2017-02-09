@@ -3,7 +3,7 @@
 
         <div class="row">
             <div class="col-sm-12 form-group">
-                <button type="button" class="btn btn-default btn-block" data-bind="todo download benchmark results">
+                <button type="button" class="btn btn-default btn-block" data-bind="disable: resultsDeleted, click: downloadBenchmarkResults()">
                     <i class="fa fa-fw fa-terminal"></i>
                     Download benchmark results
                 </button>
@@ -11,7 +11,7 @@
         </div>
         <div class="row">
             <div class="col-sm-12 form-group">
-                <button type="button" class="btn btn-default btn-block" data-bind="todo delete benchmark results from server">
+                <button type="button" class="btn btn-default btn-block" data-bind="disable: resultsDeleted, deleteBenchmarkResults()">
                     <i class="fa fa-fw fa-terminal"></i>
                     Delete benchmark results
                 </button>
@@ -19,7 +19,7 @@
         </div>
         <div class="row">
             <div class="col-sm-12 form-group">
-                <button type="button" class="btn btn-default btn-block" data-bind="todo delete control vm">
+                <button type="button" class="btn btn-default btn-block" data-bind="disable: controlVmDeleted, deleteControlVm()">
                     <i class="fa fa-fw fa-terminal"></i>
                     Delete control VM
                 </button>
