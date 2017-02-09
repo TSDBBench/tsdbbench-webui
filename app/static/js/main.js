@@ -1,5 +1,5 @@
 var tsdbBenchUI = tsdbBenchUI || { };
-console.log("ASDASDSAD");
+
 $(function () {
 
     tsdbBenchUI.Node = function() {

@@ -28,6 +28,23 @@ $(function () {
         self.databases = ko.observable();
     };
 
+    ko.bindingHandlers.loadingDimmer = {
+        update: function(element, valueAccessor) {
+            var $button, isLoading;
+
+            $button = $(element);
+            isLoading = ko.unwrap(valueAccessor());
+
+            if (isLoading) {
+                $('#pleaseWaitDialog').modal('show');
+                //$button.button('loading');
+            } else {
+                $('#pleaseWaitDialog').modal('hide');
+                //$button.button('reset');
+            }
+        }
+    };
+
     ko.bindingHandlers.loadingButton = {
         update: function(element, valueAccessor) {
             var $button, isLoading;
@@ -54,8 +71,13 @@ $(function () {
                 ]
             },
             errorObj = ko.observable({
+                createNodeError: ko.observable(),
+                terminateNodeError: ko.observable(),
+                noFloatingIpError: ko.observable(),
+                attachIpError: ko.observable(),
                 wrongKey: ko.observable()
             }),
+            isLoading = ko.observable(false),
             benchmarkConfigs = ko.observable(),
             benchmarkIsRunning = ko.observable(),
             benchmarkDebugInfo = ko.observableArray([]),
@@ -67,6 +89,7 @@ $(function () {
             selectedFlavor = ko.observable(),
             databaseList = ko.observable(),
             sshEstablished = ko.observable(),
+            secGroupsList = ko.observableArray(),
             selectedDatabase = ko.observable(),
             selectedConfiguration = ko.observable(),
             selectedDatabasesList = ko.observableArray(),
@@ -82,6 +105,8 @@ $(function () {
             selectedInstance = ko.observable(),
             checkInstanceIp = ko.computed(function() {
                 if (selectedInstance()) {
+                    console.log(selectedInstance());
+                    console.log(selectedInstance);
                     return getNodeFloatingIp(selectedInstance().id());
                 }
                 else return undefined;
@@ -119,14 +144,17 @@ $(function () {
                 $(elem).prev().find('a[data-toggle="tab"]').click();
             },
             isKeyPairCreated = ko.observable(),
-            generateKeyPair = function() {
+            generateKeyPair = function(callback) {
                 $.ajax({
                     type: 'POST',
                     dataType: "json",
                     url: '/genkeypair',
                     data: {},
                     success: function(data) {
-                        isKeyPairCreated(data)
+                        isKeyPairCreated(data);
+                        if(typeof(callback) == "function") {
+                            callback();
+                        }
                     },
                     timeout: 5000
                 }).fail( function( xhr, status ) {
@@ -174,6 +202,7 @@ $(function () {
                     url: '/getnodes',
                     data: {},
                     success: function(data) {
+                        console.log(data);
                         result = [];
                         for (var i = 0; i < data.length; i++) {
                             result.push(
@@ -205,11 +234,14 @@ $(function () {
                 });
             },
             getNodeFloatingIp = function(node_id) {
+                console.log("getNodeFloatingIp");
+                console.log(node_id);
                 $.ajax({
                     type: "GET",
                     url: "/getnodefloatingip",
                     data: { node: node_id},
                     success: function(data) {
+                        console.log(data);
                         if (data !== 'None') {
                             selectedInstanceIp(data);
                         }
@@ -362,6 +394,9 @@ $(function () {
                 });
             },
             testSSH = function(server_ip) {
+                console.log("testing ssh");
+                console.log(server_ip);
+                console.log(selectedInstance());
                 if (selectedInstance().extra().key_name === isKeyPairCreated()) {
                     console.log("key is OK");
                     $.ajax({
@@ -480,7 +515,189 @@ $(function () {
                 else {
                     chosenParameters(undefined);
                 }
-            };
+            },
+            getSecGroupsList = function() {
+                $.ajax({
+                    type: 'GET',
+                    dataType: "json",
+                    url: '/getsecuritygroups',
+                    data: {},
+                    success: function(data) {
+                        secGroupsList(data);
+                    },
+                    timeout: 5000
+                }).fail( function( xhr, status ) {
+                    if( status == "timeout" ) {
+                        console.log('timeout');
+                    }
+                    else {
+                        console.log(xhr);
+                        if(status) console.log(status);
+                        console.log('another error');
+                    }
+                });
+            },
+            toggleCreateInstanceDialog = function() {
+                initLists();
+                $('#createInstanceForm')[0].reset();
+                $('#createInstanceModal').modal('show');
+                $("input[name=instanceName]",'#createInstanceModal').val("AutoTest_" + Date.now())
+            },
+            initLists = function() {
+                checkKeyPair();
+                getImagesList();
+                getFlavorsList();
+                getSecGroupsList();
+            },
+            createInstance = function(formElement) {
+                getNodesList();
+                isLoading(true);
+                $.ajax({
+                    type: "POST",
+                    url: "/createnode",
+                    data: $(formElement).serialize(),
+                    success: function(data) {
+                        console.log(data);
+                        if (data.error) {
+                            console.log(data);
+                            errorObj().createNodeError(data);
+                        }
+                        else {
+                            errorObj().createNodeError(undefined);
+                            // assign newly created isntance to the selectedInstance knockout variable
+                            var newInstance = new runBm.Node()
+                                .created_at(data.created_at)
+                                .id(data.id)
+                                .image(data.image)
+                                .name(data.name)
+                                .extra(data.extra)
+                                .private_ips(data.private_ips)
+                                .public_ips(data.public_ips)
+                                .size(data.size)
+                                .state(data.state)
+                                .uuid(data.uuid);
+
+                            console.log(newInstance);
+
+                            selectedInstance(newInstance);
+                            // attach floating ip
+                            autoAttachFloatingIp(data.id);
+                            console.log(data.id);
+                            $('#createInstanceModal').modal('hide');
+                        }
+
+                        isLoading(false);
+                    }
+                }).fail( function( xhr, status ) {
+                    isLoading(false);
+                    if( status == "timeout" ) {
+                        console.log('timeout');
+                    }
+                    else {
+                        console.log(xhr);
+                        if(status) console.log(status);
+                        console.log('another error');
+                    }
+                });
+            },
+            getFloatingIpList = function(node_id, callback) {
+                $.ajax({
+                    type: 'GET',
+                    dataType: "json",
+                    url: '/getfloatingips',
+                    data: {},
+                    success: function(data) {
+                        if (data.error) {
+                           console.log(data);
+                           errorObj().noFloatingIpError(data);
+                        }
+                        else {
+                            console.log(data);
+                            if(typeof(callback) == "function") {
+                                callback(data[0].id, node_id);
+                            }
+                        }
+                    },
+                    timeout: 5000
+                }).fail( function( xhr, status ) {
+                    if( status == "timeout" ) {
+                        console.log('timeout');
+                    }
+                    else {
+                        console.log(xhr);
+                        if(status) console.log(status);
+                        console.log('another error');
+                    }
+                });
+            },
+            allocateFloatingIp = function() {
+                $.ajax({
+                    type: 'POST',
+                    dataType: "json",
+                    url: '/allocatefloatingip',
+                    data: {},
+                    success: function(data) {
+                        console.log("Floating IP was allocated");
+                    },
+                    timeout: 5000
+                }).fail( function( xhr, status ) {
+                    if( status == "timeout" ) {
+                        console.log('timeout');
+                    }
+                    else {
+                        console.log(xhr);
+                        if(status) console.log(status);
+                        console.log('another error');
+                    }
+                });
+            },
+            //floating_ip - ip unique identifier, not actual ip
+            //node_id - actual node_id, not unique identifier
+            attachFloatingIp = function(floating_ip, node_id) {
+                console.log(floating_ip);
+                console.log(node_id);
+                isLoading(true);
+                $.ajax({
+                    type: "POST",
+                    url: "/attachfloatingip",
+                    data: {'instance': node_id, 'floating_ip': floating_ip},
+                    success: function(data) {
+                        isLoading(false);
+                        if (data != "False") {
+                            getNodesList();
+                            console.log("Floating IP was successfully attached");
+                            selectedInstanceIp(floating_ip);
+                            testSSH(selectedInstanceIp() );
+                            $('#attachFloatingIpModal').modal('hide');
+                        } else if (data == "False") {
+                            console.error("Failed to attach floating_ip " + floating_ip + " to node_id: " + node_id);
+                        } else {
+                            console.error("Unknown attach floating_ip error");
+                        }
+                    }
+                }).fail( function( xhr, status ) {
+                    isLoading(false);
+                    if( status == "timeout" ) {
+                        console.log("timeout");
+                    }
+                    else {
+                        console.log(xhr);
+                        if(status) console.log(status);
+                        console.log('another error');
+                    }
+                });
+            },
+            autoCreateControlVM = function() {
+                // generate keypair and show the create isntance dialog
+                generateKeyPair(toggleCreateInstanceDialog);
+
+                //todo set sshEstablished to true when all is fine
+            },
+            autoAttachFloatingIp = function(node_id) {
+                // retrieve a list of free floating ips, attach the first available ip to the provided node_id
+                getFloatingIpList(node_id ,attachFloatingIp);
+            }
+            ;
 
 
         return {
@@ -491,6 +708,7 @@ $(function () {
             benchmarkResults: benchmarkResults,
             checkKeyPair: checkKeyPair,
             chosenParameters: chosenParameters,
+            createInstance: createInstance,
             databaseList: databaseList,
             databasesToRemove: databasesToRemove,
             errorObj: errorObj,
@@ -504,10 +722,12 @@ $(function () {
             imagesList: imagesList,
             initWizard: initWizard,
             isKeyPairCreated: isKeyPairCreated,
+            isLoading: isLoading,
             keyPairIconStyle: keyPairIconStyle,
             nodesList: nodesList,
             removeSelectedDatabases: removeSelectedDatabases,
             saveChosenParams: saveChosenParams,
+            secGroupsList: secGroupsList,
             selectedConfiguration: selectedConfiguration,
             selectedDatabase: selectedDatabase,
             selectedDatabasesList: selectedDatabasesList,
@@ -518,7 +738,8 @@ $(function () {
             selectedInstanceIp: selectedInstanceIp,
             sshExecuteBenchmark: sshExecuteBenchmark,
             sshEstablished: sshEstablished,
-            testSSH: testSSH
+            testSSH: testSSH,
+            autoCreateControlVM: autoCreateControlVM
         };
 
     }();

@@ -211,8 +211,21 @@ def instantiate_node(conn, instance_name, image, flavor, key_pair_name, sec_grou
                                                 ex_security_groups=[sec_group_obj])
             conn.wait_until_running([testing_instance])
         print('Instance was successfully created')
+        
+        new_node = {}
+        new_node["success"] = True
+        new_node["uuid"] = testing_instance.uuid
+        new_node["name"] = testing_instance.name
+        new_node["created_at"] = testing_instance.created_at
+        new_node["image"] = testing_instance.image
+        new_node["extra"] = testing_instance.extra
+        new_node["private_ips"] = testing_instance.private_ips
+        new_node["public_ips"] = testing_instance.public_ips
+        new_node["size"] = testing_instance.size
+        new_node["state"] = testing_instance.state
+        new_node["id"] = testing_instance.id
 
-        return True
+        return new_node
 
     except Exception as e:
         print("instantiate_node exception: " + str(e))

@@ -129,6 +129,14 @@ def getnodes():
     else:
         return jsonify(None)
 
+@main.route('/getnode', methods=['GET'])
+def getnode():
+    if session.get('username', None)['provider'] == 'Openstack':
+        node_id = str(escape(request.args.get('node_id')))
+        nodes = get_node_by_id(get_connection_from_session(), node_id)
+        return jsonify(nodes)
+    else:
+        return jsonify(None)
 
 @main.route('/getsecuritygroups', methods=['GET'])
 def getsecuritygroups():
@@ -196,8 +204,9 @@ def createnode():
                         sgroup
                     )
 
-                    if result is True:
-                        return jsonify(True)
+                    if result["success"] is True:
+                        result["error"] = False;
+                        return jsonify(result)
                     else:
                         return jsonify({"error": str(result)})
 
@@ -249,7 +258,14 @@ def genkeypair():
 def checkkeypair():
     if 'username' in session:
         if 'keypair' in session:
-            return jsonify(session['keypair']['keyName'])
+            #check if keypair exists on filesystem
+            keyDir = session['keypair']["dir"]
+            keyFile = session['keypair']["keyName"]
+            keyFilePath = keyDir + '/' + keyFile + "_private.pem"
+            if(check_file_exists(keyFilePath)):
+                return jsonify(session['keypair']['keyName'])
+            else:
+                return jsonify(False)
         else:
             return jsonify(False)
     else:
