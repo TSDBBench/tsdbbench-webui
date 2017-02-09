@@ -577,9 +577,6 @@ $(function () {
                                 .state(data.state)
                                 .uuid(data.uuid);
 
-                            // console.log(newInstance);
-
-                            // selectedInstance(newInstance);
                             nodesList().push(newInstance);
                             // attach floating ip
                             autoAttachFloatingIp(data.id);
@@ -668,7 +665,7 @@ $(function () {
                             getNodesList();
                             console.log("Floating IP was successfully attached");
                             selectedInstanceIp(floating_ip);
-                            testSSH(selectedInstanceIp() );
+                            // testSSH(selectedInstanceIp() );
                             $('#attachFloatingIpModal').modal('hide');
                         } else if (data == "False") {
                             console.error("Failed to attach floating_ip " + floating_ip + " to node_id: " + node_id);
