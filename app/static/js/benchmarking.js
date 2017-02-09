@@ -105,8 +105,6 @@ $(function () {
             selectedInstance = ko.observable(),
             checkInstanceIp = ko.computed(function() {
                 if (selectedInstance()) {
-                    console.log(selectedInstance());
-                    console.log(selectedInstance);
                     return getNodeFloatingIp(selectedInstance().id());
                 }
                 else return undefined;
@@ -579,9 +577,10 @@ $(function () {
                                 .uuid(data.uuid);
 
                             nodesList().push(newInstance);
+                            newInstanceg = newInstance;
+                            nodesListg = nodesList;
+                            selectedInstanceg = selectedInstance;
 
-                            //this does not work
-                            selectedInstance(newInstance);
 
                             //save the node_id of the newly created vm
                             console.log(data.id);
@@ -624,6 +623,7 @@ $(function () {
                                 //todo stop & revert auto create process (delete newly created control vm)
                             } else {
                                 floating_ip_id(data[0].id);
+                                selectedInstanceIp(data[0].ip_address);
                             }
                         }
                     },
@@ -675,13 +675,14 @@ $(function () {
                         if (data != "False") {
                             getNodesList();
                             console.log("Floating IP was successfully attached");
-                            selectedInstanceIp(floating_ip_id());
                             // testSSH(selectedInstanceIp() );
                             $('#attachFloatingIpModal').modal('hide');
                         } else if (data == "False") {
-                            console.error("Failed to attach floating_ip " + floating_ip_id() + " to node_id: " + node_id());
+                            console.error("Failed to attach floating_ip " + selectedInstanceIp() + " with id: " + floating_ip_id() + " to node_id: " + node_id());
+                            selectedInstanceIp(undefined);
                         } else {
                             console.error("Unknown attach floating_ip error");
+                            selectedInstanceIp(undefined);
                         }
                     }
                 }).fail( function( xhr, status ) {
@@ -701,33 +702,27 @@ $(function () {
                 generateKeyPair().then(toggleCreateInstanceDialog);
             },
             autoCreateControlVM = function(formElement) {
-                globalTest = autoCreateControlVM;
-              // var releaseFloatingIPsPromise = releaseFloatingIPs();
-              // releaseFloatingIPsPromise.done(function () {
-              //   console.log("releaseFloatingIPsPromise done");
-              //   var getFloatingIpListPromise = getFloatingIpList();
-              //   getFloatingIpListPromise.done(function () {
-              //     console.log("getFloatingIpListPromise done");
-              //     var attachFloatingIpPromise = attachFloatingIp();
-              //     attachFloatingIpPromise.done(function () {
-              //       console.log("attachFloatingIpPromise done");
-              //     });
-              //     attachFloatingIpPromise.fail(function () {
-              //       console.error("attachFloatingIpPromise failed");
-              //     });
-              //   });
-              //   getFloatingIpListPromise.fail(function () {
-              //     console.error("getFloatingIpListPromise failed");
-              //   });
-              // });
-              // releaseFloatingIPsPromise.fail(function () {
-              //   console.error("releaseFloatingIPsPromise failed");
-              // });
-              releaseFloatingIPs().then(allocateFloatingIp).then(getFloatingIpList).then(attachFloatingIp);
+                doesNotWorkDueToRaceCondition = function() {
+                    console.warn("-------------------------calling doesNotWorkDueToRaceCondition");
+                    for(var i = 0; i < nodesList().length; i++) {
+                        var element = nodesList()[i];
+                        if (element.id() === node_id()) {
+                            console.log("old instance");
+                            console.log(selectedInstance());
 
+                            selectedInstance(nodesList()[i]);
 
-                // .then(attachFloatingIp).then(testSSH);
-                //todo set sshEstablished to true when all is fine
+                            console.log("new instance");
+                            console.log(selectedInstance());
+                        }
+                    }
+                };
+
+                releaseFloatingIPs().then(allocateFloatingIp).then(getFloatingIpList).then(attachFloatingIp).then(function() {
+                  doesNotWorkDueToRaceCondition();
+                  setTimeout(doesNotWorkDueToRaceCondition, 6000);
+                });
+
             },
             releaseFloatingIPs = function() {
                 isLoading(true);
