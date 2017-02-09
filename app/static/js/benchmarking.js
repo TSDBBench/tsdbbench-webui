@@ -577,9 +577,10 @@ $(function () {
                                 .state(data.state)
                                 .uuid(data.uuid);
 
-                            console.log(newInstance);
+                            // console.log(newInstance);
 
-                            selectedInstance(newInstance);
+                            // selectedInstance(newInstance);
+                            nodesList().push(newInstance);
                             // attach floating ip
                             autoAttachFloatingIp(data.id);
                             console.log(data.id);
