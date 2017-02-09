@@ -1,6 +1,6 @@
 ## TSDBBench Web UI middleware
 
-Python 3.6, Apache Libcloud, Flask
+Python 3.6 (mandatory, other 3.x versions such as 3.5.0 will not work), Apache Libcloud, Flask
 
 ## Installation
 
