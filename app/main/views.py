@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, session, request, current_app, escape, jsonify
+from flask import render_template, redirect, url_for, session, request, current_app, escape, jsonify, json
 from app.libcloud_utils import *
 from app.ssh_utils import *
 from app.ssh_benchmark_controller import *
@@ -625,9 +625,14 @@ def sshbenchmarkresults():
 
 @main.route('/deletebenchmarkresults', methods=['POST', 'DELETE'])
 def deletebenchmarkresults():
+    print("-------------")
+    print("deletebenchmarkresults")
+    print("-------------")
     if 'username' in session:
+        data = json.loads(request.form.get('data'))
+        results_to_delete = data['results_to_delete']
         #todo delete all result files in results_to_delete
-        results_to_delete = str(escape(request.form['results_to_delete']))
+        print("-------------")
         print(results_to_delete)
         for r in results_to_delete:
             lastIndex = r.rfind("/")
@@ -636,6 +641,7 @@ def deletebenchmarkresults():
             print("file to delete")
             print(filePath)
             # deleteFile(filePath)
+        # return jsonify(results_to_delete)
         return jsonify(True)
     else:
         return jsonify({"error": "User is not logged in. Please log in"})

@@ -3,7 +3,7 @@
 
         <div class="row">
             <div class="col-sm-12 form-group">
-                <button type="button" class="btn btn-default btn-block" data-bind="disable: resultsDeleted, click: downloadBenchmarkResults()">
+                <button type="button" class="btn btn-default btn-block" data-bind="disable: resultsDeleted, click: function() {downloadBenchmarkResults(); }">
                     <i class="fa fa-fw fa-terminal"></i>
                     Download benchmark results
                 </button>
@@ -11,7 +11,7 @@
         </div>
         <div class="row">
             <div class="col-sm-12 form-group">
-                <button type="button" class="btn btn-default btn-block" data-bind="disable: resultsDeleted, deleteBenchmarkResults()">
+                <button type="button" class="btn btn-default btn-block" data-bind="disable: resultsDeleted, click: function() {deleteBenchmarkResults(); }">
                     <i class="fa fa-fw fa-terminal"></i>
                     Delete benchmark results
                 </button>
@@ -19,7 +19,7 @@
         </div>
         <div class="row">
             <div class="col-sm-12 form-group">
-                <button type="button" class="btn btn-default btn-block" data-bind="disable: controlVmDeleted, deleteControlVm()">
+                <button type="button" class="btn btn-default btn-block" data-bind="disable: controlVmDeleted, click: function() {deleteControlVm(); }">
                     <i class="fa fa-fw fa-terminal"></i>
                     Delete control VM
                 </button>

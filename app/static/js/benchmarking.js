@@ -114,6 +114,7 @@ $(function () {
             selectedInstanceIp = ko.observable(),
             //selectedInstanceKeyCompatible = ko.computed(),
             resultsDeleted = ko.observable(false),
+            controlVmDeleted = ko.observable(false),
             initWizard = function() {
                 //Initialize tooltips
                 $('.nav-tabs > li a[title]').tooltip();
@@ -701,10 +702,12 @@ $(function () {
                 console.log(benchmarkResults());
                 $.ajax({
                     type: "DELETE",
-                    url: "/deleteBenchmarkResults",
-                    data: {"results_to_delete": benchmarkResults()},
+                    url: "/deletebenchmarkresults",
+                    data: {
+                        data: JSON.stringify({"results_to_delete": benchmarkResults()})
+                    },
                     success: function(data) {
-                        console.log("benchmark result deleted ");
+                        console.log("benchmark results deleted ");
                         resultsDeleted(data);
                     }
                 }).fail( function( xhr, status ) {
