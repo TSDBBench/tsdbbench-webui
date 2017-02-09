@@ -314,7 +314,7 @@ def startnode():
         return jsonify({"error": "User is not logged in. Please log in"})
 
 
-@main.route('/terminatenode', methods=['POST'])
+@main.route('/terminatenode', methods=['POST', 'DELETE'])
 def terminatenode():
     if 'username' in session:
         if session.get('username', None)['provider'] == 'Openstack':
@@ -626,17 +626,32 @@ def sshbenchmarkresults():
 @main.route('/deletebenchmarkresults', methods=['POST', 'DELETE'])
 def deletebenchmarkresults():
     if 'username' in session:
-        results_to_delete = str(escape(request.form['results_to_delete']))
         #todo delete all result files in results_to_delete
+        results_to_delete = str(escape(request.form['results_to_delete']))
+        print(results_to_delete)
+        for r in results_to_delete:
+            lastIndex = r.rfind("/")
+            fileName = r[lastIndex+1:]
+            filePath = tsdbbench_settings['results_folder'] + "/" + fileName
+            print("file to delete")
+            print(filePath)
+            # deleteFile(filePath)
         return jsonify(True)
     else:
         return jsonify({"error": "User is not logged in. Please log in"})
 
-@main.route('/deletecontrolvm', methods=['POST', 'DELETE'])
-def deletecontrolvm():
+@main.route('/downloadbenchmarkresult', methods=['GET'])
+def downloadbenchmarkresult():
     if 'username' in session:
-        node_id = str(escape(request.form['node_id']))
-        #todo delete vm with node_id
+        result_to_download = str(escape(request.form['result_to_download']))
+        print(result_to_download)
+        lastIndex = r.rfind("/")
+        fileName = r[lastIndex+1:]
+        filePath = tsdbbench_settings['results_folder'] + "/" + fileName
+        print("file to download")
+        print(filePath)
+        # deleteFile(filePath)
+        # return send_from_directory(directory=tsdbbench_settings['results_folder'], filename=fileName)
         return jsonify(True)
     else:
         return jsonify({"error": "User is not logged in. Please log in"})
