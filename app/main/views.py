@@ -1,7 +1,6 @@
 from flask import render_template, redirect, url_for, session, request, current_app, escape, jsonify, json
 from app.libcloud_utils import *
 from app.ssh_utils import *
-from app.ssh_benchmark_controller import *
 from . import main
 import sys
 import time
