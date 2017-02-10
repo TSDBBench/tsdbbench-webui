@@ -23,16 +23,25 @@
                     <i class="fa fa-dashboard"></i>
                     Dashboard
                 </li>
+                <li >
+                    {{ session['username'].provider }}
+                </li>
+                <li >
+                    {{ session['username'].region }}
+                </li>
+                <li >
+                    {{ session['username'].project }}
+                </li>
             </ol>
         </div>
     </div>
     <!-- /.row -->
-
+    
 {% endblock main_page_heading %}
 
 {% block page_content %}
 
-    actual content
+    <center><h2>Welcome to TSDBBench Web User Interface</h2></center>
 
 {% endblock page_content %}
 
