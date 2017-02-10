@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css">
     <link rel="stylesheet" href="/static/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/login.css">
 {% endblock head %}
 
 
@@ -36,12 +37,28 @@
         </div>
     </div>
     <!-- /.row -->
-    
+
 {% endblock main_page_heading %}
 
 {% block page_content %}
 
-    <center><h2>Welcome to TSDBBench Web User Interface</h2></center>
+<div class="container">
+  <div class="row">
+    <center >
+      <center>
+        <h2>Welcome to TSDBBench Web User Interface</h2>
+      </center>
+      <div class="account-wall">
+        <p>TSDBBench UI provides a single point of communication with Elastic Infrastructure and Virtual Machine instances.</p>
+        <p>It's goal is to simplify the process of running TSDB benchmarks by automating VM instance creation, SSH keys generation and control over created VMs.</p>
+        <p>It was built to support multiple Cloud providers.</p>
+        <img src="/static/images/logoDE-UST.jpg" alt="" width="100">
+        <img src="/static/images/ipvs_logo.gif" alt="" width="111">
+      </div>
+    </div>
+  </div>
+</div>
+
 
 {% endblock page_content %}
 
