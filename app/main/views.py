@@ -626,22 +626,23 @@ def sshbenchmarkresults():
 @main.route('/deletebenchmarkresults', methods=['POST', 'DELETE'])
 def deletebenchmarkresults():
     print("-------------")
-    print("deletebenchmarkresults")
-    print("-------------")
     if 'username' in session:
         data = json.loads(request.form.get('data'))
         results_to_delete = data['results_to_delete']
-        #todo delete all result files in results_to_delete
+        #delete all result files in results_to_delete
         print("-------------")
         print(results_to_delete)
-        for r in results_to_delete:
-            lastIndex = r.rfind("/")
-            fileName = r[lastIndex+1:]
-            filePath = tsdbbench_settings['results_folder'] + "/" + fileName
-            print("file to delete")
-            print(filePath)
-            # deleteFile(filePath)
-        # return jsonify(results_to_delete)
+        for filePath in results_to_delete:
+            print("deleting file:")
+            fullFilePath = current_app.root_path + '/' + filePath
+            print(fullFilePath)
+            isDeleted = delete_file(fullFilePath)
+            if isDeleted is True:
+                print("FILE DELETED")
+            else:
+                print(e)
+                print("COULD NOT DELETE FILE")
+        #todo check if all files have indeed been deleted from the server with check_file_exists(filePath)
         return jsonify(True)
     else:
         return jsonify({"error": "User is not logged in. Please log in"})

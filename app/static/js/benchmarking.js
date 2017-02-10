@@ -751,11 +751,16 @@ $(function () {
             deleteBenchmarkResults = function() {
                 console.log("about to delete benchmark results: ");
                 console.log(benchmarkResults());
+                var results_to_delete = [];
+                for (var i = 0; i < benchmarkResults().length; i++) {
+                    var url = benchmarkResults()[i].url;
+                    results_to_delete.push(url);
+                }                    
                 $.ajax({
                     type: "DELETE",
                     url: "/deletebenchmarkresults",
                     data: {
-                        data: JSON.stringify({"results_to_delete": benchmarkResults()})
+                        data: JSON.stringify({"results_to_delete": results_to_delete})
                     },
                     success: function(data) {
                         console.log("benchmark results deleted ");
